@@ -39,3 +39,4 @@
 
 !modules/
 !modules/**
+.idea/editor.xml
