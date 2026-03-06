@@ -1,0 +1,41 @@
+# Ignore all files and directories by default
+*
+*/
+
+# Allow these file extensions
+!*.c
+!*.cpp
+!*.h
+!*.hpp
+!*.inl
+!*.rc
+!*.rs
+!*.txt
+!.clang-format
+!*.md
+!*.git*
+!*.clang*
+!*.bat
+!*.sh
+!*.hint
+!*.cmake
+
+# Allow these special files
+!COPYING
+!LICENSE
+!THIRD_PARTY
+!CODE_OF_CONDUCT
+!CMakePresets.json
+
+# Allow these directories
+!cfg/
+!cfg/**
+
+!cmake/
+!cmake/**
+
+!docs/
+!docs/**
+
+!modules/
+!modules/**
