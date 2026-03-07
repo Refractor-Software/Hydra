@@ -1,69 +1,122 @@
-// Copyright (C) William Pimentel-Tonche and contributors. All rights reserved.
+// Copyright (C) William Pimentel-Tonche. All rights reserved.
 
 #pragma once
 
 #include <memory_resource>
-#include <foundation/primitive_types.h>
 
-namespace hydra :: containers
+namespace hydra::containers
 {
-    template<typename T>
-    class Array : std::pmr::vector<T>
+    template <typename element_type>
+    class array : std::pmr::vector<element_type>
     {
-        using Base = std::pmr::vector<T>;
+        using base = std::pmr::vector<element_type>;
+        using iterator = base::iterator;
+        using const_iterator = base::const_iterator;
+        using size_type = base::size_type;
 
     public:
-        explicit
-        Array( std::pmr::memory_resource* mr = std::pmr::get_default_resource() )
-        : Base(mr)
+        explicit array(std::pmr::memory_resource *Mr = std::pmr::get_default_resource()) : base(Mr)
         {
         }
 
-        using Base::operator[];
-        using Base::begin;
-        using Base::end;
-
-        constexpr friend void
-        PushBack( Array& A, T& Value )
+        array(std::initializer_list<element_type> Init,
+              std::pmr::memory_resource *Mr = std::pmr::get_default_resource())
+            : base(Init, Mr)
         {
-            A.push_back(Value);
         }
 
-        constexpr friend void
-        PushBack( Array& A, const T& Value )
+        using base::operator[];
+        using base::begin;
+        using base::cbegin;
+        using base::cend;
+        using base::end;
+
+        [[nodiscard]] bool
+        is_empty() const
         {
-            A.push_back(Value);
+            return base::empty();
         }
 
-        constexpr friend void
-        Reserve( Array& A, u64 Count )
+        size_type
+        num_elements() const
         {
-            A.reserve(Count);
+            return base::size();
         }
 
-        constexpr friend void
-        Clear( Array& A )
+        size_type
+        capacity() const
         {
-            A.clear();
+            return base::capacity();
         }
 
-        constexpr friend bool
-        IsEmpty( Array& A )
+        void
+        reserve(size_type count)
         {
-            return A.empty();
+            base::reserve(count);
         }
 
-        constexpr friend u64
-        NumElements( Array& A )
+        void
+        shrink_to_fit()
         {
-            return A.size();
+            base::shrink_to_fit();
         }
 
-        constexpr friend void
-        SwapRemove( Array& A, u64 Index )
+        void
+        append(const element_type &value)
         {
-            A[Index] = std::move(A.back());
-            A.pop_back();
+            base::push_back(value);
+        }
+
+        void
+        append(element_type &&value)
+        {
+            base::push_back(std::move(value));
+        }
+
+        template <typename... args>
+        element_type &
+        emplace(args &&...constructor_args)
+        {
+            return base::emplace_back(std::forward<args>(constructor_args)...);
+        }
+
+        iterator
+        insert_at(size_type index, const element_type &value)
+        {
+            return base::insert(base::begin() + index, value);
+        }
+
+        void
+        remove_unordered(size_type index)
+        {
+            (*this)[index] = std::move(base::back());
+            base::pop_back();
+        }
+
+        void
+        remove_ordered(size_type index)
+        {
+            base::erase(base::begin() + index);
+        }
+
+        element_type
+        pop_last()
+        {
+            element_type result = std::move(base::back());
+            base::pop_back();
+            return result;
+        }
+
+        void
+        reset()
+        {
+            base::clear();
+        }
+
+        void
+        resize_to(size_type new_size)
+        {
+            base::resize(new_size);
         }
     };
-}
+} // namespace hydra::containers

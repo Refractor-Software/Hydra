@@ -1,65 +1,76 @@
 {
-    "version": 3,
-    "cmakeMinimumRequired": {
-        "major": 4,
-        "minor": 1,
-        "patch": 0
-    },
-    "configurePresets": [
-        {
-            "name": "Win64",
-            "hidden": true,
-            "generator": "Ninja",
-            "architecture": {
-                "value": "x64",
-                "strategy": "external"
-            },
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            },
-            "vendor": {
-                "jetbrains.com/clion": {
-                    "toolchain": "Visual Studio"
-                }
-            }
-        },
-        {
-            "name": "Win64-Debug",
-            "displayName": "Win64 Debug",
-            "inherits": "Win64",
-            "binaryDir": "${sourceDir}/bin/win64/debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "Win64-Development",
-            "displayName": "Win64 Development",
-            "inherits": "Win64",
-            "binaryDir": "${sourceDir}/bin/win64/development",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "Win64-Shipping",
-            "displayName": "Win64 Shipping",
-            "inherits": "Win64",
-            "binaryDir": "${sourceDir}/bin/win64/shipping",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 4,
+    "minor": 1,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "Win64",
+      "hidden": true,
+      "generator": "Ninja",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_FLAGS": "/std:c++20"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "vendor": {
+        "jetbrains.com/clion": {
+          "toolchain": "Visual Studio"
         }
-    ],
-    "buildPresets": [
-        { "name": "Win64-Debug",     "configurePreset": "Win64-Debug" },
-        { "name": "Win64-Development", "configurePreset": "Win64-Development" },
-        { "name": "Win64-Shipping",  "configurePreset": "Win64-Shipping" }
-    ]
+      }
+    },
+    {
+      "name": "Win64-Debug",
+      "displayName": "Win64 Debug",
+      "inherits": "Win64",
+      "binaryDir": "${sourceDir}/bin/win64/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Win64-Development",
+      "displayName": "Win64 Development",
+      "inherits": "Win64",
+      "binaryDir": "${sourceDir}/bin/win64/development",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Win64-Shipping",
+      "displayName": "Win64 Shipping",
+      "inherits": "Win64",
+      "binaryDir": "${sourceDir}/bin/win64/shipping",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Win64-Debug",
+      "configurePreset": "Win64-Debug"
+    },
+    {
+      "name": "Win64-Development",
+      "configurePreset": "Win64-Development"
+    },
+    {
+      "name": "Win64-Shipping",
+      "configurePreset": "Win64-Shipping"
+    }
+  ]
 }

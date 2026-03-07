@@ -39,3 +39,6 @@
 
 !modules/
 !modules/**
+
+!vendor/
+!vendor/**

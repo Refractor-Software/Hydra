@@ -3,6 +3,7 @@ project(Hydra)
 
 include(cmake/module_tools.cmake)
 
+add_subdirectory(vendor)
 add_subdirectory(modules)
 
 add_executable(Hydra main.cpp)
