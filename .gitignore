@@ -48,3 +48,11 @@
 
 !ThirdParty/
 !ThirdParty/**
+
+# Block these directories including in all subdirectories
+**/Intermediate/
+**/Binaries/
+
+# .NET defaults to these so just catch all that shit
+**/obj/
+**/bin/

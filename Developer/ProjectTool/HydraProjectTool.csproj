@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Hydra.ProjectTool</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <LangVersion>default</LangVersion>
+    <PackageId>HydraProjectTool</PackageId>
+    <Version>0.1.0</Version>
+    <Title>Hydra Project Tool</Title>
+    <Authors>Refractor Software</Authors>
+    <Description>Command line tool used to generate and update Hydra projects.</Description>
+    <Copyright>Copyright (C) Refractor Software. All rights reserved.</Copyright>
+    <Company>Refractor Software</Company>
+    <Product>Hydra Project Tool</Product>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>0.1.0</FileVersion>
+    <AssemblyName>Hydra.ProjectTool</AssemblyName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+</Project>

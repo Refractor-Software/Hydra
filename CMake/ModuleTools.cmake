@@ -24,8 +24,13 @@ function(hydra_add_module _module_name)
             "${_current_include_path}/*.h"
             "${_current_include_path}/*.inl"
         )
-        target_sources(${_module_name} PUBLIC ${MODULE_INCLUDE})
-        target_include_directories(${_module_name} PUBLIC ${_current_include_path})
+        target_sources(${_module_name} PRIVATE
+            $<BUILD_INTERFACE:${MODULE_INCLUDE}>
+        )
+        target_include_directories(${_module_name} PUBLIC
+            $<BUILD_INTERFACE:${_current_include_path}>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        )
     endif ()
     target_include_directories(${_module_name} PRIVATE ${_current_src_path})
 
@@ -100,7 +105,22 @@ function(hydra_add_module _module_name)
         FOLDER "Runtime"
         VS_GLOBAL_UseDebugLibraries "$<CONFIG:Debug>"
     )
-    source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${MODULE_SRC})
-    source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Header Files" FILES ${MODULE_INCLUDE})
+
+    if (MODULE_SRC)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${MODULE_SRC})
+    endif()
+    if (MODULE_INCLUDE)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Header Files" FILES ${MODULE_INCLUDE})
+    endif()
+
+    # --- Install ---
+    install(TARGETS ${_module_name}
+        EXPORT HydraTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+    install(DIRECTORY ${_current_include_path}/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
 
 endfunction()

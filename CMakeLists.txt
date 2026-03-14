@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 4.1)
-project(Hydra)
+project(Hydra VERSION 0.1.0)
 
 include(CMake/ModuleTools.cmake)
 include(CMake/VisualStudioSolution.cmake)
 
-add_subdirectory(vendor)
-add_subdirectory(modules)
+add_subdirectory(ThirdParty)
+add_subdirectory(Runtime)
 
-add_executable(Hydra main.cpp)
-
-target_link_libraries(Hydra PRIVATE hydra_foundation)
+include(CMake/HydraInstall.cmake)

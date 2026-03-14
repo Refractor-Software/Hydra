@@ -1,4 +1,4 @@
-hydra_add_module(hydra_foundation DEPENDS
+hydra_add_module(HydraFoundation DEPENDS
     absl::base
     absl::strings
     absl::flat_hash_map
