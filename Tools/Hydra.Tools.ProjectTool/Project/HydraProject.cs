@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Hydra.ProjectTool;
+namespace Hydra.Tools.ProjectTool.Project;
 
 /// <summary>
 /// Root descriptor for a Hydra game project. Persisted as &lt;ProjectName&gt;.hyproject.

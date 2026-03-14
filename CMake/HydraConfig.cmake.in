@@ -5,4 +5,35 @@ include("${CMAKE_CURRENT_LIST_DIR}/HydraDependencies.cmake")
 
 include("${CMAKE_CURRENT_LIST_DIR}/HydraTargets.cmake")
 
+# ---------------------------------------------------------------------------
+# hydra_enable_packages()
+#
+# Called by game project CMakeLists.txt to load requested packages from the
+# installed Hydra SDK. Validates that each requested package exists and
+# includes its CMake targets.
+#
+# Usage:
+#   hydra_enable_packages(SomeFeature AnotherFeature)
+# ---------------------------------------------------------------------------
+function(hydra_enable_packages)
+    foreach(_pkg IN LISTS ARGN)
+        set(_pkg_dir "${CMAKE_CURRENT_LIST_DIR}/../../../Packages/${_pkg}")
+        cmake_path(NORMAL_PATH _pkg_dir)
+
+        if (NOT EXISTS "${_pkg_dir}")
+            message(FATAL_ERROR
+                "hydra_enable_packages: Package '${_pkg}' not found in Hydra SDK. "
+                "Expected at: ${_pkg_dir}"
+            )
+        endif()
+
+        set(_pkg_targets "${_pkg_dir}/Runtime/${_pkg}Targets.cmake")
+        if (EXISTS "${_pkg_targets}")
+            include("${_pkg_targets}")
+        endif()
+
+        message(STATUS "Hydra: enabled package '${_pkg}'")
+    endforeach()
+endfunction()
+
 check_required_components(Hydra)

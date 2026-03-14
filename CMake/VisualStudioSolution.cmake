@@ -8,5 +8,6 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "_cmake")
 
-# Solution-level startup project
-#set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT Hydra)
+# --- C# projects ---
+include("${CMAKE_CURRENT_LIST_DIR}/HydraStudio.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/HydraTools.cmake")

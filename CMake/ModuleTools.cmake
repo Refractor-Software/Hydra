@@ -1,5 +1,11 @@
 function(hydra_add_module _module_name)
-    cmake_parse_arguments(ARG "" "" "DEPENDS" ${ARGN})
+    cmake_parse_arguments(ARG "" "EXPORT" "DEPENDS" ${ARGN})
+
+    if (DEFINED HYDRA_CURRENT_PACKAGE_EXPORT)
+        set(_export_set "${HYDRA_CURRENT_PACKAGE_EXPORT}")
+    else()
+        set(_export_set "HydraTargets")
+    endif()
 
     set(_current_include_path "${CMAKE_CURRENT_SOURCE_DIR}/Include")
     set(_current_src_path "${CMAKE_CURRENT_SOURCE_DIR}/Source")
@@ -115,12 +121,91 @@ function(hydra_add_module _module_name)
 
     # --- Install ---
     install(TARGETS ${_module_name}
-        EXPORT HydraTargets
+        EXPORT ${_export_set}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
+
     install(DIRECTORY ${_current_include_path}/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
+endfunction()
 
+function(hydra_declare_package)
+    cmake_parse_arguments(ARG "" "NAME" "RUNTIME;STUDIO;TOOLS" ${ARGN})
+
+    if (NOT ARG_NAME)
+        message(FATAL_ERROR "hydra_declare_package: NAME is required.")
+    endif()
+
+    message(STATUS "Hydra: registering package '${ARG_NAME}'")
+
+    # --- Runtime modules ---
+    set(HYDRA_CURRENT_PACKAGE_EXPORT "Hydra${ARG_NAME}Targets")
+    foreach(_runtime_module IN LISTS ARG_RUNTIME)
+        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_runtime_module}")
+            add_subdirectory(${_runtime_module})
+        else()
+            message(WARNING "hydra_declare_package: Runtime module '${_runtime_module}' not found, skipping.")
+        endif()
+    endforeach()
+    unset(HYDRA_CURRENT_PACKAGE_EXPORT)
+
+    if (ARG_RUNTIME)
+        install(EXPORT "Hydra${ARG_NAME}Targets"
+            FILE "${ARG_NAME}Targets.cmake"
+            NAMESPACE Hydra::
+            DESTINATION "Packages/${ARG_NAME}/Runtime"
+        )
+    endif()
+
+    # --- Tool modules (C++ or C# CLI tools) ---
+    foreach(_tool IN LISTS ARG_TOOLS)
+        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_tool}")
+            add_subdirectory(${_tool})
+        else()
+            message(WARNING "hydra_declare_package: Tool '${_tool}' not found, skipping.")
+        endif()
+    endforeach()
+
+    # --- Studio modules (C# — VS solution inclusion only) ---
+    if (CMAKE_GENERATOR MATCHES "Visual Studio")
+        foreach(_studio_module IN LISTS ARG_STUDIO)
+            set(_studio_path "${CMAKE_CURRENT_SOURCE_DIR}/${_studio_module}")
+            if (NOT EXISTS "${_studio_path}")
+                message(WARNING "hydra_declare_package: Studio module '${_studio_module}' not found, skipping.")
+                continue()
+            endif()
+
+            file(GLOB _csproj "${_studio_path}/*.csproj")
+            if (NOT _csproj)
+                message(WARNING "hydra_declare_package: No .csproj found in '${_studio_path}', skipping.")
+                continue()
+            endif()
+
+            get_filename_component(_proj_name "${_csproj}" NAME_WE)
+            include_external_msproject(
+                ${_proj_name}
+                "${_csproj}"
+                TYPE "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
+            )
+            set_target_properties(${_proj_name} PROPERTIES
+                FOLDER "Packages/${ARG_NAME}"
+            )
+        endforeach()
+    endif()
+
+    # --- Install: Studio module DLLs ---
+    foreach(_studio_module IN LISTS ARG_STUDIO)
+        set(_studio_path "${CMAKE_CURRENT_SOURCE_DIR}/${_studio_module}")
+        if (EXISTS "${_studio_path}")
+            install(DIRECTORY "${_studio_path}/"
+                DESTINATION "Packages/${ARG_NAME}/Studio"
+                FILES_MATCHING PATTERN "*.dll"
+            )
+        endif()
+    endforeach()
+
+    # --- Track globally ---
+    set_property(GLOBAL APPEND PROPERTY HYDRA_REGISTERED_PACKAGES ${ARG_NAME})
 endfunction()

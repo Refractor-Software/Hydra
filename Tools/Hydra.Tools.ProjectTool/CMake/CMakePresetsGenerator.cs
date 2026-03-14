@@ -1,7 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Hydra.Tools.ProjectTool.Project;
 
-namespace Hydra.ProjectTool;
+namespace Hydra.Tools.ProjectTool.CMake;
 
 /// <summary>
 /// Generates CMakePresets.json and CMakeUserPresets.json for a Hydra game project.

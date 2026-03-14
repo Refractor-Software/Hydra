@@ -1,5 +1,6 @@
 using System.Text.Json;
-using Hydra.ProjectTool;
+using Hydra.Tools.ProjectTool.CMake;
+using Hydra.Tools.ProjectTool.Project;
 
 // ---------------------------------------------------------------------------
 // hydra — Hydra Engine project tool
@@ -19,7 +20,7 @@ var command = args[0].ToLowerInvariant();
 
 return command switch
 {
-    "new"    => RunNew(args[1..]),
+    "new" => RunNew(args[1..]),
     "update" => RunUpdate(args[1..]),
     "--help" or "-h" or "help" => PrintHelp(),
     _ => Error($"Unknown command '{args[0]}'. Run 'hydra --help' for usage.")
@@ -33,7 +34,7 @@ static int RunNew(string[] args)
 {
     // --- Parse args ---
     string? projectName = null;
-    string? outputPath  = null;
+    string? outputPath = null;
     string? hydraVersion = null;
     var platforms = new List<string> { "Windows" };
 
@@ -67,9 +68,9 @@ static int RunNew(string[] args)
     // --- Build descriptor ---
     var project = new HydraProject
     {
-        Name          = projectName,
-        HydraVersion  = hydraVersion ?? "",
-        Platforms     = platforms
+        Name = projectName,
+        HydraVersion = hydraVersion ?? "",
+        Platforms = platforms
     };
 
     Console.WriteLine($"Creating project '{projectName}' at {outputPath}");
@@ -146,21 +147,21 @@ static void SaveDescriptor(string projectDir, HydraProject project)
 static int PrintHelp()
 {
     Console.WriteLine("""
-        hydra — Hydra Engine project tool
+                      hydra — Hydra project tool
 
-        Usage:
-          hydra new <ProjectName> [options]
-          hydra update <path-to.hyproject>
+                      Usage:
+                        hydra new <ProjectName> [options]
+                        hydra update <path-to.hyproject>
 
-        new options:
-          --path, -p <dir>            Output directory (default: ./<ProjectName>)
-          --hydra-version, -hv <ver>  Engine version to target
-          --platforms <p1,p2,...>     Target platforms (default: Windows)
+                      new options:
+                        --path, -p <dir>            Output directory (default: ./<ProjectName>)
+                        --hydra-version, -hv <ver>  Engine version to target
+                        --platforms <p1,p2,...>     Target platforms (default: Windows)
 
-        Examples:
-          hydra new MyGame --path C:/Projects/MyGame --hydra-version 0.1.0
-          hydra update C:/Projects/MyGame/MyGame.hyproject
-        """);
+                      Examples:
+                        hydra new MyGame --path C:/Projects/MyGame --hydra-version 0.1.0
+                        hydra update C:/Projects/MyGame/MyGame.hyproject
+                      """);
     return 0;
 }
 

@@ -1,6 +1,7 @@
 using System.Diagnostics;
+using Hydra.Tools.ProjectTool.Project;
 
-namespace Hydra.ProjectTool;
+namespace Hydra.Tools.ProjectTool.CMake;
 
 /// <summary>
 /// Runs CMake to configure and generate project files.

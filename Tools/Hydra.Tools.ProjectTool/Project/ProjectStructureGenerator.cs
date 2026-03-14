@@ -1,4 +1,4 @@
-namespace Hydra.ProjectTool;
+namespace Hydra.Tools.ProjectTool.Project;
 
 /// <summary>
 /// Creates the on-disk folder structure and boilerplate files for a new Hydra game project.
@@ -38,28 +38,32 @@ public static class ProjectStructureGenerator
 
     private static void WriteCMakeLists(string projectDir, HydraProject project)
     {
-        var path = Path.Combine(projectDir, "CMakeLists.txt");
+        string path = Path.Combine(projectDir, "CMakeLists.txt");
         if (File.Exists(path)) return;
 
-        // Build the target_link_libraries list.
-        // HydraFoundation is always included; additional modules appended.
+        // Build target_link_libraries list
         var modules = new List<string> { "Hydra::HydraFoundation" };
-        foreach (var module in project.Modules)
+        foreach (string module in project.Modules)
             modules.Add($"Hydra::{module}");
 
-        var linkLibraries = string.Join("\n    ", modules);
+        string linkLibraries = string.Join("\n    ", modules);
 
-        File.WriteAllText(path, $"""
-                                 cmake_minimum_required(VERSION 4.1)
-                                 project({project.Name})
+        // Build hydra_enable_packages block — only emit if packages are specified
+        string enablePackages = project.Packages.Count > 0
+            ? $"\nhydra_enable_packages(\n    {string.Join("\n    ", project.Packages)}\n)\n"
+            : "";
 
-                                 find_package(Hydra REQUIRED)
+        File.WriteAllText(path, $$"""
+                                  cmake_minimum_required(VERSION 4.1)
+                                  project({{project.Name}})
 
-                                 add_executable({project.Name} Source/main.cpp)
-                                 target_link_libraries({project.Name} PRIVATE
-                                     {linkLibraries}
-                                 )
-                                 """);
+                                  find_package(Hydra REQUIRED)
+                                  {{enablePackages}}
+                                  add_executable({{project.Name}} Source/main.cpp)
+                                  target_link_libraries({{project.Name}} PRIVATE
+                                      {{linkLibraries}}
+                                  )
+                                  """);
     }
 
     private static void WriteMainCpp(string projectDir, HydraProject project)

@@ -6,5 +6,6 @@ include(CMake/VisualStudioSolution.cmake)
 
 add_subdirectory(ThirdParty)
 add_subdirectory(Runtime)
+add_subdirectory(Packages)
 
 include(CMake/HydraInstall.cmake)
