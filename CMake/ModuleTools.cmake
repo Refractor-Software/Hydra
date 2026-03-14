@@ -174,7 +174,7 @@ function(hydra_add_csproj _path)
         endif()
     endif()
 
-    get_filename_component(_name "${_csproj}" NAME_WE)
+    get_filename_component(_name "${_csproj}" NAME_WLE)
 
     if (ARG_PLATFORM)
         set(_type_guid "${ARG_PLATFORM}")
