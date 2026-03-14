@@ -1,19 +1,31 @@
 {
   "version": 3,
-  "cmakeMinimumRequired": {
-    "major": 4,
-    "minor": 1,
-    "patch": 0
-  },
+  "cmakeMinimumRequired": { "major": 4, "minor": 1, "patch": 0 },
   "configurePresets": [
     {
-      "name": "Win64",
+      "name": "Windows-VisualStudio",
+      "displayName": "Windows (Visual Studio)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": { "value": "x64", "strategy": "set" },
+      "binaryDir": "${sourceDir}/Intermediate/Windows-VisualStudio",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;RelWithDebInfo;Release",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows",
+        "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows",
+        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "Windows-Ninja",
       "hidden": true,
       "generator": "Ninja",
-      "architecture": {
-        "value": "x64",
-        "strategy": "external"
-      },
+      "architecture": { "value": "x64", "strategy": "external" },
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_CXX_COMPILER": "cl.exe",
@@ -24,53 +36,51 @@
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
-      },
-      "vendor": {
-        "jetbrains.com/clion": {
-          "toolchain": "Visual Studio"
-        }
       }
     },
     {
-      "name": "Win64-Debug",
-      "displayName": "Win64 Debug",
-      "inherits": "Win64",
-      "binaryDir": "${sourceDir}/bin/win64/debug",
+      "name": "Windows-Ninja-Debug",
+      "displayName": "Windows (Ninja) Debug",
+      "inherits": "Windows-Ninja",
+      "binaryDir": "${sourceDir}/Intermediate/Windows-Ninja/Debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/Debug",
+        "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/Debug",
+        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/Debug"
       }
     },
     {
-      "name": "Win64-Development",
-      "displayName": "Win64 Development",
-      "inherits": "Win64",
-      "binaryDir": "${sourceDir}/bin/win64/development",
+      "name": "Windows-Ninja-RelWithDebInfo",
+      "displayName": "Windows (Ninja) RelWithDebInfo",
+      "inherits": "Windows-Ninja",
+      "binaryDir": "${sourceDir}/Intermediate/Windows-Ninja/RelWithDebInfo",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/RelWithDebInfo",
+        "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/RelWithDebInfo",
+        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/RelWithDebInfo"
       }
     },
     {
-      "name": "Win64-Shipping",
-      "displayName": "Win64 Shipping",
-      "inherits": "Win64",
-      "binaryDir": "${sourceDir}/bin/win64/shipping",
+      "name": "Windows-Ninja-Release",
+      "displayName": "Windows (Ninja) Release",
+      "inherits": "Windows-Ninja",
+      "binaryDir": "${sourceDir}/Intermediate/Windows-Ninja/Release",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/Release",
+        "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/Release",
+        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/Binaries/Windows/Release"
       }
     }
   ],
   "buildPresets": [
-    {
-      "name": "Win64-Debug",
-      "configurePreset": "Win64-Debug"
-    },
-    {
-      "name": "Win64-Development",
-      "configurePreset": "Win64-Development"
-    },
-    {
-      "name": "Win64-Shipping",
-      "configurePreset": "Win64-Shipping"
-    }
+    { "name": "Windows-VisualStudio-Debug",          "configurePreset": "Windows-VisualStudio", "configuration": "Debug" },
+    { "name": "Windows-VisualStudio-RelWithDebInfo", "configurePreset": "Windows-VisualStudio", "configuration": "RelWithDebInfo" },
+    { "name": "Windows-VisualStudio-Release",        "configurePreset": "Windows-VisualStudio", "configuration": "Release" },
+    { "name": "Windows-Ninja-Debug",                 "configurePreset": "Windows-Ninja-Debug" },
+    { "name": "Windows-Ninja-RelWithDebInfo",        "configurePreset": "Windows-Ninja-RelWithDebInfo" },
+    { "name": "Windows-Ninja-Release",               "configurePreset": "Windows-Ninja-Release" }
   ]
 }

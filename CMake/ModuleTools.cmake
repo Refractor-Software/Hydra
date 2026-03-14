@@ -1,8 +1,8 @@
 function(hydra_add_module _module_name)
     cmake_parse_arguments(ARG "" "" "DEPENDS" ${ARGN})
 
-    set(_current_include_path "${CMAKE_CURRENT_SOURCE_DIR}/include")
-    set(_current_src_path "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    set(_current_include_path "${CMAKE_CURRENT_SOURCE_DIR}/Include")
+    set(_current_src_path "${CMAKE_CURRENT_SOURCE_DIR}/Source")
 
     add_library(${_module_name} STATIC)
 
@@ -19,7 +19,6 @@ function(hydra_add_module _module_name)
     endif ()
 
     if (EXISTS ${_current_include_path})
-        # NOTE(will) Not strictly necessary but this enables headers to exist in CLion clangd/clang-tidy by default.
         file(GLOB_RECURSE MODULE_INCLUDE
             "${_current_include_path}/*.hpp"
             "${_current_include_path}/*.h"
@@ -51,11 +50,11 @@ function(hydra_add_module _module_name)
         # Correct __cplusplus results
         $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
 
-        # Static CRT — debug uses /MTd, all others use /MT
+        # Static CRT
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Debug>>:/MTd>
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<CONFIG:Debug>>>:/MT>
 
-        # Whole program optimization for Shipping only
+        # Whole program optimization for Release (Shipping) only
         $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/GL>
     )
 
@@ -66,18 +65,16 @@ function(hydra_add_module _module_name)
 
     # --- Preprocessor definitions ---
     target_compile_definitions(${_module_name} PRIVATE
-        # Unicode character set
         UNICODE
         _UNICODE
-
-        # Suppress min/max macros from windows.h
         NOMINMAX
-
-        # Disable exceptions in Abseil
         ABSL_NO_EXCEPTIONS
-
-        # Disable exceptions in STL (pairs with /EHs-c-)
         $<$<CXX_COMPILER_ID:MSVC>:_HAS_EXCEPTIONS=0>
+
+        # Per-config defines
+        $<$<CONFIG:Debug>:HYDRA_DEBUG>
+        $<$<CONFIG:RelWithDebInfo>:HYDRA_DEVELOPMENT>
+        $<$<CONFIG:Release>:HYDRA_SHIPPING>
     )
 
     # --- Architecture / SIMD flags ---
@@ -99,6 +96,11 @@ function(hydra_add_module _module_name)
     endif ()
 
     # --- IDE ---
-    set_target_properties(${_module_name} PROPERTIES FOLDER "modules")
+    set_target_properties(${_module_name} PROPERTIES
+        FOLDER "Runtime"
+        VS_GLOBAL_UseDebugLibraries "$<CONFIG:Debug>"
+    )
+    source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${MODULE_SRC})
+    source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Header Files" FILES ${MODULE_INCLUDE})
 
 endfunction()

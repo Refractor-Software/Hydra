@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 4.1)
 project(Hydra)
 
-include(cmake/module_tools.cmake)
+include(CMake/ModuleTools.cmake)
+include(CMake/VisualStudioSolution.cmake)
 
 add_subdirectory(vendor)
 add_subdirectory(modules)

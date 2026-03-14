@@ -1,3 +1,0 @@
-[submodule "modules/foundation/vendor/abseil"]
-	path = vendor/abseil-cpp/abseil
-	url = https://github.com/abseil/abseil-cpp.git

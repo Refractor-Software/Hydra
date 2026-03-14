@@ -28,17 +28,23 @@
 !CMakePresets.json
 
 # Allow these directories
-!cfg/
-!cfg/**
+!Config/
+!Config/**
 
-!cmake/
-!cmake/**
+!CMake/
+!CMake/**
 
-!docs/
-!docs/**
+!Documentation/
+!Documentation/**
 
-!modules/
-!modules/**
+!Runtime/
+!Runtime/**
 
-!vendor/
-!vendor/**
+!Developer/
+!Developer/**
+
+!Studio/
+!Studio/**
+
+!ThirdParty/
+!ThirdParty/**
