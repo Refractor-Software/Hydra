@@ -1,11 +1,6 @@
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-# Install public headers
-install(DIRECTORY Runtime/Foundation/Include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
 # Generate and install the targets file
 install(EXPORT HydraTargets
     FILE HydraTargets.cmake
