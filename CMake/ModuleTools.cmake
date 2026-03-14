@@ -131,6 +131,46 @@ function(hydra_add_module _module_name)
     )
 endfunction()
 
+# Discovers all C++ runtime modules under a directory and adds them to the build.
+#
+#   hydra_discover_modules(<directory>)
+#
+# Each immediate subdirectory of <directory> that contains a Module.cmake
+# marker file is added via add_subdirectory(). To add a new module, create
+# the directory and place a Module.cmake file in it — no edits to any
+# orchestration CMakeLists.txt are required.
+function(hydra_discover_modules _dir)
+    if (NOT IS_ABSOLUTE "${_dir}")
+        set(_dir "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}")
+    endif()
+
+    if (NOT EXISTS "${_dir}")
+        message(WARNING "hydra_discover_modules: '${_dir}' does not exist, skipping.")
+        return()
+    endif()
+
+    file(GLOB _subdirs LIST_DIRECTORIES true "${_dir}/*")
+
+    set(_found_count 0)
+    foreach(_sub IN LISTS _subdirs)
+        if (NOT IS_DIRECTORY "${_sub}")
+            continue()
+        endif()
+        if (NOT EXISTS "${_sub}/Module.cmake")
+            continue()
+        endif()
+
+        get_filename_component(_sub_name "${_sub}" NAME)
+        message(STATUS "Hydra: discovered module '${_sub_name}'")
+        add_subdirectory("${_sub}")
+        math(EXPR _found_count "${_found_count} + 1")
+    endforeach()
+
+    if (_found_count EQUAL 0)
+        message(WARNING "hydra_discover_modules: No modules found in '${_dir}'.")
+    endif()
+endfunction()
+
 # Adds a single C# project to the Visual Studio solution.
 #
 #   hydra_add_csproj(<path>
@@ -251,16 +291,38 @@ function(hydra_declare_package)
 
     # --- Runtime modules ---
     set(HYDRA_CURRENT_PACKAGE_EXPORT "Hydra${ARG_NAME}Targets")
-    foreach(_runtime_module IN LISTS ARG_RUNTIME)
-        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_runtime_module}")
-            add_subdirectory(${_runtime_module})
-        else()
-            message(WARNING "hydra_declare_package: Runtime module '${_runtime_module}' not found, skipping.")
-        endif()
-    endforeach()
-    unset(HYDRA_CURRENT_PACKAGE_EXPORT)
 
     if (ARG_RUNTIME)
+        # Explicit list provided: use it verbatim.
+        foreach(_runtime_module IN LISTS ARG_RUNTIME)
+            if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_runtime_module}")
+                add_subdirectory(${_runtime_module})
+            else()
+                message(WARNING "hydra_declare_package: Runtime module '${_runtime_module}' not found, skipping.")
+            endif()
+        endforeach()
+        set(_has_runtime TRUE)
+    else()
+        # No explicit list: auto-discover subdirs containing Module.cmake.
+        file(GLOB _pkg_subdirs LIST_DIRECTORIES true "${CMAKE_CURRENT_SOURCE_DIR}/*")
+        set(_has_runtime FALSE)
+        foreach(_sub IN LISTS _pkg_subdirs)
+            if (NOT IS_DIRECTORY "${_sub}")
+                continue()
+            endif()
+            if (NOT EXISTS "${_sub}/Module.cmake")
+                continue()
+            endif()
+            get_filename_component(_sub_name "${_sub}" NAME)
+            message(STATUS "Hydra: discovered runtime module '${_sub_name}' in package '${ARG_NAME}'")
+            add_subdirectory("${_sub}")
+            set(_has_runtime TRUE)
+        endforeach()
+    endif()
+
+    unset(HYDRA_CURRENT_PACKAGE_EXPORT)
+
+    if (_has_runtime)
         install(EXPORT "Hydra${ARG_NAME}Targets"
             FILE "${ARG_NAME}Targets.cmake"
             NAMESPACE Hydra::
