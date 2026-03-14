@@ -42,7 +42,7 @@ public static class ProjectStructureGenerator
         if (File.Exists(path)) return;
 
         // Build target_link_libraries list
-        var modules = new List<string> { "Hydra::HydraFoundation" };
+        var modules = new List<string> { "Hydra::Hydra.Runtime.Foundation" };
         foreach (string module in project.Modules)
             modules.Add($"Hydra::{module}");
 
