@@ -40,6 +40,9 @@
 !Runtime/
 !Runtime/**
 
+!Packages/
+!Packages/**
+
 !Tools/
 !Tools/**
 
