@@ -21,24 +21,14 @@ public sealed class PackageLoader
 
     public void LoadAll()
     {
-        // 1. Engine built-in packages from Hydra SDK
-        string sdkPackages = Path.Combine(_environment.HydraRoot, "Packages");
-        if (Directory.Exists(sdkPackages))
-            LoadFromPackageRoot(sdkPackages);
+        // 1. Engine packages (installed SDK or dev repo)
+        LoadFromHydraRoot(_environment.HydraRoot);
 
         // 2. Game project packages
         if (_environment.Project is not null)
         {
-            // Packages/ sibling to the .hyproject file — convention from project structure
-            string? projectDir = Path.GetDirectoryName(
-                Path.GetFullPath(
-                    Environment.GetCommandLineArgs()
-                        .FirstOrDefault(a => a.EndsWith(".hyproject", StringComparison.OrdinalIgnoreCase)
-                        ) ?? ""
-                )
-            );
-
-            if (!string.IsNullOrEmpty(projectDir))
+            string? projectDir = ResolveProjectDir();
+            if (projectDir is not null)
             {
                 string projectPackages = Path.Combine(projectDir, "Packages");
                 if (Directory.Exists(projectPackages))
@@ -46,10 +36,46 @@ public sealed class PackageLoader
             }
         }
 
-        // 3. Built-in tool modules next to the executable
+        // 3. Built-in Studio modules next to the executable
         string builtInModules = Path.Combine(AppContext.BaseDirectory, "StudioModules");
         if (Directory.Exists(builtInModules))
             LoadFromDirectory(builtInModules);
+    }
+
+    private string? ResolveProjectDir() => _environment.ProjectDirectory;
+
+    private void LoadFromHydraRoot(string hydraRoot)
+    {
+        // Installed SDK layout: <root>/Packages/Package.*/Studio/
+        string installedPackages = Path.Combine(hydraRoot, "Packages");
+        if (Directory.Exists(installedPackages))
+            LoadFromPackageRoot(installedPackages);
+
+        // Dev repo layout: <root>/Packages/Package.*/Package.*.Studio/bin/<config>/
+        // The C# build outputs land in bin/ subdirectories in the dev tree
+        LoadFromDevPackageRoot(hydraRoot);
+    }
+
+    private void LoadFromDevPackageRoot(string repoRoot)
+    {
+        string packagesDir = Path.Combine(repoRoot, "Packages");
+        if (!Directory.Exists(packagesDir))
+            return;
+
+        foreach (string packageDir in Directory.EnumerateDirectories(packagesDir, "Package.*"))
+        {
+            // Find any Package.*.Studio directories
+            foreach (string studioDir in Directory.EnumerateDirectories(packageDir, "*.Studio"))
+            {
+                // Scan build output directories — check all configs
+                foreach (string config in new[] { "Debug", "RelWithDebInfo", "Release" })
+                {
+                    string binDir = Path.Combine(studioDir, "bin", config);
+                    if (Directory.Exists(binDir))
+                        LoadFromDirectory(binDir);
+                }
+            }
+        }
     }
 
     // Scans <root>/Package.*/Studio/*.dll

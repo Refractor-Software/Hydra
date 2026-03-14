@@ -86,7 +86,7 @@ namespace hydra::containers
 
         iterator Append(const K &key, V &&value)
         {
-            return emplace(key, value);
+            return emplace(key, value).first;
         }
 
         void Remove(const K &key)

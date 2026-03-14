@@ -2,4 +2,4 @@
 
 #pragma once
 
-#include "foundation/primitive_types.h"
+#include "Foundation/PrimitiveTypes.h"
