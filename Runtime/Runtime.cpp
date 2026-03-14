@@ -1,1 +1,0 @@
-// Empty manifest file needed to construct the Hydra runtime executable target.
