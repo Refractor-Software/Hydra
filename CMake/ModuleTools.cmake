@@ -131,6 +131,115 @@ function(hydra_add_module _module_name)
     )
 endfunction()
 
+# Adds a single C# project to the Visual Studio solution.
+#
+#   hydra_add_csproj(<path>
+#       [FOLDER <folder>]    # VS solution folder, e.g. "Studio" or "Packages/Foo"
+#       [PLATFORM <guid>]    # override VS project type GUID (default: C# GUID)
+#   )
+#
+# <path> may be:
+#   - a .csproj file (absolute or relative to CMAKE_CURRENT_SOURCE_DIR)
+#   - a directory containing exactly one .csproj file
+#
+# No-op when not using a Visual Studio generator.
+function(hydra_add_csproj _path)
+    if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
+        return()
+    endif()
+
+    cmake_parse_arguments(ARG "" "FOLDER;PLATFORM" "" ${ARGN})
+
+    # Resolve to an absolute path
+    if (NOT IS_ABSOLUTE "${_path}")
+        set(_path "${CMAKE_CURRENT_SOURCE_DIR}/${_path}")
+    endif()
+
+    # Accept either a directory or a .csproj file directly
+    if (IS_DIRECTORY "${_path}")
+        file(GLOB _csproj "${_path}/*.csproj")
+        list(LENGTH _csproj _count)
+        if (_count EQUAL 0)
+            message(WARNING "hydra_add_csproj: No .csproj found in '${_path}', skipping.")
+            return()
+        elseif (_count GREATER 1)
+            message(WARNING "hydra_add_csproj: Multiple .csproj files found in '${_path}', skipping.")
+            return()
+        endif()
+    else()
+        set(_csproj "${_path}")
+        if (NOT EXISTS "${_csproj}")
+            message(WARNING "hydra_add_csproj: '${_csproj}' does not exist, skipping.")
+            return()
+        endif()
+    endif()
+
+    get_filename_component(_name "${_csproj}" NAME_WE)
+
+    if (ARG_PLATFORM)
+        set(_type_guid "${ARG_PLATFORM}")
+    else()
+        set(_type_guid "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}")
+    endif()
+
+    include_external_msproject(${_name} "${_csproj}" TYPE "${_type_guid}")
+
+    if (ARG_FOLDER)
+        set_target_properties(${_name} PROPERTIES FOLDER "${ARG_FOLDER}")
+    endif()
+endfunction()
+
+# Discovers all C# projects under a directory and adds them to the VS solution.
+#
+#   hydra_discover_csprojs(<directory>
+#       [FOLDER <folder>]   # VS solution folder applied to every discovered project
+#       [RECURSE]           # search subdirectories (default: top-level subdirs only)
+#   )
+#
+# Each immediate subdirectory of <directory> that contains exactly one .csproj
+# file is registered via hydra_add_csproj(). With RECURSE, all .csproj files
+# anywhere under <directory> are discovered instead.
+#
+# No-op when not using a Visual Studio generator.
+function(hydra_discover_csprojs _dir)
+    if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
+        return()
+    endif()
+
+    cmake_parse_arguments(ARG "RECURSE" "FOLDER" "" ${ARGN})
+
+    if (NOT IS_ABSOLUTE "${_dir}")
+        set(_dir "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}")
+    endif()
+
+    if (NOT EXISTS "${_dir}")
+        message(WARNING "hydra_discover_csprojs: '${_dir}' does not exist, skipping.")
+        return()
+    endif()
+
+    if (ARG_RECURSE)
+        file(GLOB_RECURSE _csprojs "${_dir}/*.csproj")
+    else()
+        # One .csproj per immediate subdirectory
+        file(GLOB _subdirs LIST_DIRECTORIES true "${_dir}/*")
+        set(_csprojs "")
+        foreach(_sub IN LISTS _subdirs)
+            if (IS_DIRECTORY "${_sub}")
+                file(GLOB _found "${_sub}/*.csproj")
+                list(APPEND _csprojs ${_found})
+            endif()
+        endforeach()
+    endif()
+
+    foreach(_csproj IN LISTS _csprojs)
+        if (ARG_FOLDER)
+            hydra_add_csproj("${_csproj}" FOLDER "${ARG_FOLDER}")
+        else()
+            hydra_add_csproj("${_csproj}")
+        endif()
+    endforeach()
+endfunction()
+
 function(hydra_declare_package)
     cmake_parse_arguments(ARG "" "NAME" "RUNTIME;STUDIO;TOOLS" ${ARGN})
 
@@ -169,31 +278,14 @@ function(hydra_declare_package)
     endforeach()
 
     # --- Studio modules (C# — VS solution inclusion only) ---
-    if (CMAKE_GENERATOR MATCHES "Visual Studio")
-        foreach(_studio_module IN LISTS ARG_STUDIO)
-            set(_studio_path "${CMAKE_CURRENT_SOURCE_DIR}/${_studio_module}")
-            if (NOT EXISTS "${_studio_path}")
-                message(WARNING "hydra_declare_package: Studio module '${_studio_module}' not found, skipping.")
-                continue()
-            endif()
-
-            file(GLOB _csproj "${_studio_path}/*.csproj")
-            if (NOT _csproj)
-                message(WARNING "hydra_declare_package: No .csproj found in '${_studio_path}', skipping.")
-                continue()
-            endif()
-
-            get_filename_component(_proj_name "${_csproj}" NAME_WE)
-            include_external_msproject(
-                ${_proj_name}
-                "${_csproj}"
-                TYPE "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
-            )
-            set_target_properties(${_proj_name} PROPERTIES
-                FOLDER "Packages/${ARG_NAME}"
-            )
-        endforeach()
-    endif()
+    foreach(_studio_module IN LISTS ARG_STUDIO)
+        set(_studio_path "${CMAKE_CURRENT_SOURCE_DIR}/${_studio_module}")
+        if (NOT EXISTS "${_studio_path}")
+            message(WARNING "hydra_declare_package: Studio module '${_studio_module}' not found, skipping.")
+            continue()
+        endif()
+        hydra_add_csproj("${_studio_path}" FOLDER "Packages/${ARG_NAME}")
+    endforeach()
 
     # --- Install: Studio module DLLs ---
     foreach(_studio_module IN LISTS ARG_STUDIO)

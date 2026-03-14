@@ -8,6 +8,6 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "_cmake")
 
-# --- C# projects ---
-include("${CMAKE_CURRENT_LIST_DIR}/HydraStudio.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/HydraTools.cmake")
+# --- C# projects (auto-discovered) ---
+hydra_discover_csprojs("${CMAKE_SOURCE_DIR}/Studio" FOLDER "Studio" RECURSE)
+hydra_discover_csprojs("${CMAKE_SOURCE_DIR}/Tools"  FOLDER "Tools"  RECURSE)
