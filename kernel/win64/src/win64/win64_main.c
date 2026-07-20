@@ -8,6 +8,7 @@
 
 #include "win64/input/win64_input.h"
 #include "win64/gamepad/win64_gamepad.h"
+#include "win64/render/win64_render.h"
 
 #include "application/application.h"
 
@@ -64,6 +65,10 @@ win64_window_proc (HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 
         case WM_KILLFOCUS:
             win64_input_release_all_held_keys ();
+            return 0;
+
+        case WM_SIZE:
+            win64_render_notify_resize (LOWORD (lParam), HIWORD (lParam));
             return 0;
 
         default:
@@ -129,6 +134,12 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
         return 1;
     }
 
+    if (!win64_render_init (window))
+    {
+        DestroyWindow (window);
+        return 1;
+    }
+
     ShowWindow (window, showCommand);
     UpdateWindow (window);
 
@@ -179,6 +190,8 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
             break;
         }
 
+        win64_render_process_resize ();
+
         /* XInput has no message-based notification, so it's polled explicitly once per tick
          * rather than being fed from win64_window_proc like keyboard/mouse are.
          */
@@ -188,10 +201,13 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
 
         application_tick (&context, deltaTime);
 
+        win64_render_draw ();
+
         win64_debug_update_window_title (window, deltaTime);
     }
 
     application_shutdown (&context);
+    win64_render_shutdown ();
     VirtualFree (appMemory, 0, MEM_RELEASE);
 
     return exitCode;
