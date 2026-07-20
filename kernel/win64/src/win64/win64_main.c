@@ -9,6 +9,10 @@
 #include "win64/input/win64_input.h"
 #include "win64/gamepad/win64_gamepad.h"
 #include "win64/render/win64_render.h"
+#include "win64/startup/win64_startup.h"
+#include "win64/crash/win64_crash.h"
+#include "win64/log/win64_log.h"
+#include "win64/thread/win64_thread.h"
 
 #include "application/application.h"
 
@@ -128,87 +132,120 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
     (void) previousInstance;
     (void) commandLine;
 
-    HWND window = win64_window_create (instance);
-    if (!window)
+    /* Must run before anything else - no log/crash infrastructure exists yet to report a
+     * problem through, so this shows its own MessageBoxW on failure.
+     */
+    if (!win64_startup_check_cpu_features ())
     {
         return 1;
     }
 
-    if (!win64_render_init (window))
-    {
-        DestroyWindow (window);
-        return 1;
-    }
-
-    ShowWindow (window, showCommand);
-    UpdateWindow (window);
-
-    void *appMemory = VirtualAlloc (NULL, WIN64_APP_MEMORY_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    if (!appMemory)
-    {
-        DestroyWindow (window);
-        return 1;
-    }
-
-    app_context context = {0};
-    context.memory      = appMemory;
-    context.memorySize  = WIN64_APP_MEMORY_SIZE;
-    context.input       = win64_input_queue_get ();
-
-    if (!application_init (&context))
-    {
-        VirtualFree (appMemory, 0, MEM_RELEASE);
-        DestroyWindow (window);
-        return 1;
-    }
-
-    win64_time_init ();
+    win64_log_init ();
+    win64_crash_init ();
 
     b8  running  = TRUE;
     int exitCode = 0;
 
-    while (running)
+    __try
     {
-        win64_input_reset ();
+        win64_startup_init_com ();
+        win64_startup_set_dpi_awareness ();
+        win64_thread_set_current_thread_name (L"MainThread");
 
-        MSG message;
-        while (PeekMessageW (&message, NULL, 0, 0, PM_REMOVE))
+        HWND window = win64_window_create (instance);
+        if (!window)
         {
-            if (message.message == WM_QUIT)
+            exitCode = 1;
+            __leave;
+        }
+
+        if (!win64_render_init (window))
+        {
+            DestroyWindow (window);
+            exitCode = 1;
+            __leave;
+        }
+
+        ShowWindow (window, showCommand);
+        UpdateWindow (window);
+
+        void *appMemory = VirtualAlloc (NULL, WIN64_APP_MEMORY_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        if (!appMemory)
+        {
+            win64_render_shutdown ();
+            DestroyWindow (window);
+            exitCode = 1;
+            __leave;
+        }
+
+        app_context context = {0};
+        context.memory      = appMemory;
+        context.memorySize  = WIN64_APP_MEMORY_SIZE;
+        context.input       = win64_input_queue_get ();
+
+        if (!application_init (&context))
+        {
+            VirtualFree (appMemory, 0, MEM_RELEASE);
+            win64_render_shutdown ();
+            DestroyWindow (window);
+            exitCode = 1;
+            __leave;
+        }
+
+        win64_startup_configure_timing ();
+        win64_time_init ();
+
+        while (running)
+        {
+            win64_input_reset ();
+
+            MSG message;
+            while (PeekMessageW (&message, NULL, 0, 0, PM_REMOVE))
             {
-                running  = FALSE;
-                exitCode = (int) message.wParam;
+                if (message.message == WM_QUIT)
+                {
+                    running  = FALSE;
+                    exitCode = (int) message.wParam;
+                    break;
+                }
+
+                TranslateMessage (&message);
+                DispatchMessageW (&message);
+            }
+
+            if (!running)
+            {
                 break;
             }
 
-            TranslateMessage (&message);
-            DispatchMessageW (&message);
+            win64_render_process_resize ();
+
+            /* XInput has no message-based notification, so it's polled explicitly once per tick
+             * rather than being fed from win64_window_proc like keyboard/mouse are.
+             */
+            win64_gamepad_poll (win64_input_queue_get ());
+
+            f32 deltaTime = win64_time_tick ();
+
+            application_tick (&context, deltaTime);
+
+            win64_render_draw ();
+
+            win64_debug_update_window_title (window, deltaTime);
         }
 
-        if (!running)
-        {
-            break;
-        }
-
-        win64_render_process_resize ();
-
-        /* XInput has no message-based notification, so it's polled explicitly once per tick
-         * rather than being fed from win64_window_proc like keyboard/mouse are.
-         */
-        win64_gamepad_poll (win64_input_queue_get ());
-
-        f32 deltaTime = win64_time_tick ();
-
-        application_tick (&context, deltaTime);
-
-        win64_render_draw ();
-
-        win64_debug_update_window_title (window, deltaTime);
+        application_shutdown (&context);
+        win64_render_shutdown ();
+        VirtualFree (appMemory, 0, MEM_RELEASE);
+        win64_startup_shutdown_timing ();
+    }
+    __except (win64_crash_exception_filter (GetExceptionInformation ()))
+    {
+        exitCode = 1;
     }
 
-    application_shutdown (&context);
-    win64_render_shutdown ();
-    VirtualFree (appMemory, 0, MEM_RELEASE);
+    win64_startup_shutdown_com ();
+    win64_log_shutdown ();
 
     return exitCode;
 }

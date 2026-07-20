@@ -9,6 +9,8 @@
 
 #include <stdio.h>
 
+#include "log/log.h"
+
 /*
     win64_render.c
 
@@ -52,9 +54,7 @@ win64_render_show_error (const wchar_t *message)
 static void
 win64_render_log_adapter (const DXGI_ADAPTER_DESC1 *desc, D3D12_RAYTRACING_TIER tier)
 {
-    wchar_t line[256];
-    swprintf_s (line, 256, L"[win64_render] adapter: %s  DXR tier: %d\n", desc->Description, (int) tier);
-    OutputDebugStringW (line);
+    log_info ("[win64_render] adapter: %ls  DXR tier: %d", desc->Description, (int) tier);
 }
 
 static D3D12_RESOURCE_BARRIER

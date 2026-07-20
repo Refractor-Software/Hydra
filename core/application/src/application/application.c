@@ -4,6 +4,8 @@
 
 #include "application/application.h"
 
+#include "log/log.h"
+
 typedef struct app_state
 {
     u64 tickCount;
@@ -14,6 +16,8 @@ application_init (app_context *context)
 {
     app_state *state = (app_state *) context->memory;
     state->tickCount = 0;
+
+    log_info ("application_init: engine started");
 
     return 1;
 }
