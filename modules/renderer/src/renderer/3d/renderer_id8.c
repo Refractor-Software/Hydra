@@ -3,6 +3,20 @@
 
 	Implements raytraced indirect lighting similar to id Tech 8 ("SIGGRAPH 2025 Advances in Real-Time Rendering in Games: Fast as Hell: idTech8 Global Illumination") and RE ENGINE ("RE:2023 Advances in Ray Tracing").
 
+	Improving on id Software's approach:
+
+		Our solution for working around id's precomputed lighting woes is to precompute lighting data per-object, *not* per-scene.
+		We can do this with **precomputed radiance transfer**, storing SH coefficients, and additionally we're going to store SG lobes to greatly improve glossy and rough specular response for a pretty low cost.
+		This should also resolve id Tech 8's problem of not being able to account for glossy without the use of hand-placed cubemaps.
+
+		To address probe spawning and density challenges, we'll replace id Software's combined cascaded and local probe volumes with a single unified cascaded clip-mapped adaptive probe volume, like Unity's
+		APV (id Tech 8's clustered light grid also appears to function a bit similarly). This adaptive volume voxelizes the scene into a coarse octree and subdivides based on geometric proximity and complexity.
+		From here, the octree subdivides based on geometric density and/or complexity. We can probably aid this process using signed distance fields (SDF) which will already need to be in the engine for other
+		reasons as-is. Additionally, we'll upgrade the probe grid to also store SG lobes in addition to the usual SH coefficients.
+
+		In the end this will result in an adaptive indirect light field probe grid that can respond quickly to scene changes (many tricks out there on how to update voxel octrees quickly, and because we're not going
+		as dense as VXGI/SVOGI it's even faster) and achieve the density that used to require hand-placed volumes to achieve, improving overall lighting quality immensely.
+
 	Ideas for our implementation to attempt improving on the reference works:
 
 		Instead of combining cascaded and local volumes, we use a single unified cascaded adaptive probe volume, like Unity's APV (id Tech 8's clustered light grid also appears to function a bit similarly).

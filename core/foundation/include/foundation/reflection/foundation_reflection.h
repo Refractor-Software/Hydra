@@ -53,14 +53,14 @@
 typedef struct type_registry type_registry;
 
 /* TODO(will) Should figure out what parameters these take. Descriptor struct (type_registry_desc), something else? */
-type_registry * TypeRegistryCreate ();
-void            TypeRegistryDestroy (type_registry *TR);
+type_registry * type_registry_create ();
+void            type_registry_destroy (type_registry *reg);
 
 /* TODO(will) Same thing as above. Should figure out what parameters these take. Descriptor struct, something else?
  *            Decided to split these out for granularity in case someone wants to allocate earlier and startup later.
  */
-b8   TypeRegistryStartup (type_registry *TR);
-void TypeRegistryShutdown (type_registry *TR);
+b8   type_registry_startup (type_registry *reg);
+void type_registry_shutdown (type_registry *reg);
 
 /* TODO(will) Exhaustively, what do these different structs need? And, how can we achieve the granularity we want and not make our API suck to use?
  *            Consider for example that editor might want more data than runtime, but with this library being foundational (hence the name 'foundation')

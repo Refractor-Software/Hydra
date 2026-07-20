@@ -24,7 +24,7 @@ struct memory_allocator
 void *
 memory_allocate (memory_allocator *a, usize size)
 {
-    return a ? a->_alloc (a->_context, size) : nullptr;
+    return a ? a->_alloc (a->_context, size) : 0;
 }
 
 void
