@@ -6,4 +6,4 @@ file(GLOB_RECURSE hydra_win64_sources "src/*.h" "src/*.c")
 
 target_sources(hydra_win64 PRIVATE ${hydra_win64_sources})
 
-target_link_libraries(hydra_win64 PRIVATE foundation user32 gdi32)
+target_link_libraries(hydra_win64 PRIVATE foundation input user32 gdi32 xinput)
