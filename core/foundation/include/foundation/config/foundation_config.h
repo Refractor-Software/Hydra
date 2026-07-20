@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: Zlib */
 /* Copyright (c) William Pimentel-Tonche and contributors. All rights reserved. */
 
-#ifndef core_config_h
-#define core_config_h
+#ifndef foundation_config_h
+#define foundation_config_h
 
-/*	core_config.h
+/*	foundation_config.h
 
 	Exposes interfaces used to read/write configuration files.
 
@@ -14,6 +14,8 @@
 
 	Changes to configuration files generally require a runtime restart to apply, but this module has no bearing on that requirement, the engine kernel and modules do.
 	Either way, restarting from Studio should be easy, just press the restart button. Maybe changing project settings will do this automatically someday.
+
+	Note this isn't responsible for file I/O in any way. You are responsible for getting the bytes into memory. This just reads/writes to that memory.
 */
 
-#endif /* core_config_h */
+#endif /* foundation_config_h */

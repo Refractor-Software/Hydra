@@ -4,6 +4,13 @@
 
 #pragma once
 
+/*
+    foundation:
+
+    This module is the lowest-level of them all, mostly.
+    Both platform kernel and application can use it; it's meant to be generally reusable for any purpose.
+*/
+
 #include "foundation/primitive/foundation_primitive_predef.h"
 #include "foundation/primitive/foundation_primitive_types.h"
 
