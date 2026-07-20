@@ -139,6 +139,20 @@ This keeps related operations (`add`) adjacent while still encoding the operand
 type unambiguously in the name - manual, explicit overloading without the
 compiler guessing for you.
 
+Name files this way as well.
+
+```
+// bad:
+module/thing.h
+
+// good:
+module/module_thing.h
+
+// best, for complicated module or plugin interfaces that are better split into sub-interfaces:
+module/thing/module_thing.h
+module/thing/module_thing_part.h
+```
+
 ### Reuse names religiously
 
 Pick names and stick to them everywhere. Familiarity is the payoff: code you
@@ -637,18 +651,13 @@ operationalized: surface the bug instead of letting it hide.
 
 ## 10. Files and Organization
 
-- In most cases, expose only **one public header per library** (e.g. `module.h`),
-  backed by many `.c` files, so users never wrestle with a pile of includes.
-- In some cases, such as interfaces whose libraries are expected to be used together but
-  don't make sense as a single API (in case someone wants one and not the other, or if
-  they're related but solving different sets of problems), they can be split into multiple
-  headers, with one header per major library API.
-  - This does NOT mean segmenting a library's API into headers by functionality!
-    So, `foo_bar_*()` and `foo_baz_*()` should go in the shared `foo.h`, *not*
-    in separate `foo_bar.h` and `foo_baz.h`.
-  - Rather this is about multiple APIs contained in one library: for example a
-    platform abstraction library exposing a general operating system API `platform/os.h`
-    and a graphics device interface API `platform/gdi.h`.
+- In most cases, just **one public header per subsystem** (e.g. `module.h`), backed by
+  many `.c` files, can be sufficient.
+- That said there is nuance, and sufficiently large modules should split themselves out
+  into multiple headers in order to stay manageable, possibly into multiple subdirectories,
+  with one per major module system interface.
+  - Example: `module/module.h` as the main catch-all import, with additional headers
+  `module/thing/module_thing.h`, maybe `module/thing/module_thing_part.h` if needed.
 - Keep a separate `*_internal.h` for declarations shared *within* the module but
   hidden from the outside world.
 - Place the public header where dependent code can reach it easily; keep the
@@ -656,6 +665,8 @@ operationalized: surface the bug instead of letting it hide.
 - Generally speaking, include path should be `module/module.h`, *not* a plain `module.h`,
   in order to avoid lookup/naming issues later if/when a platform or dependency later down
   the line decides to have its own headers with a similar module header name.
+- This is less like Eskil Steenberg and more like, say, Ryan Fleury or Casey Muratori, but it
+  holds up well in our experience.
 
 ---
 
@@ -665,7 +676,8 @@ operationalized: surface the bug instead of letting it hide.
 - **Operator overloading and implicit conversions** that let a reader guess
   wrong. `dot (a, b)` and `mul (a, b)` can't be confused the way `a * b` can. Write
   the explicit suffix (`0.3f`, or `simd_add_f32vec4`) instead of trusting
-  overload resolution.
+  overload resolution. Of course in C this is not possible anyway, but just
+  remember it regardless.
 - **Implicit/undeclared things** that fail silently (a stray capital letter
   reading back a default zero). Mandatory declarations and loud errors are a
   feature.

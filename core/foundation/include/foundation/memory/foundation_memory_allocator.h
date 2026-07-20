@@ -19,19 +19,19 @@ struct memory_allocator
     void *_context;
     void *(*_alloc) (void *ctx, usize size);
     void  (*_free)  (void *ctx, void *ptr);
-}
+};
 
 void *
-MemoryAllocate (memory_allocator *a, usize size)
+memory_allocate (memory_allocator *a, usize size)
 {
     return a ? a->_alloc (a->_context, size) : nullptr;
 }
 
 void
-MemoryFree (memory_allocator *a, void *ptr)
+memory_free (memory_allocator *a, void *ptr)
 {
-    a ? a->_free (a->_context, ptr);
+    a ? a->_free (a->_context, ptr) : (void)(0);
 }
 
-#define MemoryAllocateT(T, allocator)           StaticCast (T*) (MemoryAllocate (a, sizeof (T))
-#define MemoryAllocateArrayT(T, num, allocator) StaticCast (T*) (MemoryAllocate (a, sizeof (T) * num))
+#define memory_allocate_t(T, allocator)            StaticCast (T*) (memory_allocate (a, sizeof (T))
+#define memory_allocate_array_t(T, num, allocator) StaticCast (T*) (memory_allocate (a, sizeof (T) * num))

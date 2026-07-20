@@ -20,6 +20,10 @@
 #define ReinterpretCast(To) (To)
 #endif
 
+#define PLATFORM_USE_DEFAULT_PRIMITIVE_INT 1
+#define PLATFORM_USE_DEFAULT_PRIMITIVE_FLT 1
+#define PLATFORM_USE_DEFAULT_PRIMITIVE_POINTER 1
+
 /* NOTE(will) Default platform primitives. Violates C reserved naming because fuck you, this is internal and not to be used elsewhere.
  *            This technically isn't necessary with stdint.h and cstdint available, but done regardless to avoid dragging in unneeded
  *            header imports from the standard library if we already know the types (also good for C89 for which preserving API

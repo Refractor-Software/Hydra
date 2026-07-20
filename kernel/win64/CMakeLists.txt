@@ -1,13 +1,9 @@
-﻿add_executable(hydra-win64 WIN32)
+﻿add_executable(hydra_win64 WIN32)
 
-target_include_directories(hydra-win64 PRIVATE ../)
-target_sources(hydra-win64 PRIVATE
-    win64_audio.c
-    win64_input.c
-    win64_main.c
-    win64_plugin.c
-    win64_render.c
-    win64_storage.c
-    win64_studiolink.c
-    win64_thread.c
-)
+target_include_directories(hydra_win64 PRIVATE src)
+
+file(GLOB_RECURSE hydra_win64_sources "src/*.h" "src/*.c")
+
+target_sources(hydra_win64 PRIVATE ${hydra_win64_sources})
+
+target_link_libraries(hydra_win64 PRIVATE foundation)
