@@ -17,25 +17,26 @@
 		In the end this will result in an adaptive indirect light field probe grid that can respond quickly to scene changes (many tricks out there on how to update voxel octrees quickly, and because we're not going
 		as dense as VXGI/SVOGI it's even faster) and achieve the density that used to require hand-placed volumes to achieve, improving overall lighting quality immensely.
 
-	Ideas for our implementation to attempt improving on the reference works:
-
-		Instead of combining cascaded and local volumes, we use a single unified cascaded adaptive probe volume, like Unity's APV (id Tech 8's clustered light grid also appears to function a bit similarly).
-		This adaptive volume stores the scene into an octree and subdivides based on geometric proximity and complexity. This basically automates what hand-placed local volumes did in id Tech 8.
-
-		Instead of encoding irradiance volume probes with Spherical Harmonics (SH), we're experimenting with encoding *radiance* volume probes, more similar to Lumen's world-space radiance cache or light field probes.
-		This would be part of an effort to dramatically improve the system's handling of glossy and rough specular lighting. If this doesn't work out, we can reuse id Tech's strategy of re-fitting environment probe
-		grids. And if we don't want to do that, then we can experiment with RE ENGINE's lower-resolution and checkerboarded per-pixel specular path.
-
 		We're also going to experiment with storing the final gather results in either higher-order SH, or SG. At 1/16 resolution, possibly with checkerboarding, higher-fidelity storage should not be a huge issue.
 		From here we'll take notes from Capcom's RE ENGINE on how to denoise and upscale such a low-resolution diffuse and rough specular result while maintaining visual quality,
 		possibly in tandem with (or replacing) id Tech 8's approach to this.
 
-		Another consideration, while we're at it, is that we'll try to do all of this while only running a single fidelity mode that targets *all* platforms with fixed performance profiles:
+	Another consideration, while we're at it, is that we'll try to do all of this while only running a single fidelity mode that targets *all* platforms with fixed performance profiles:
 
-			Steam Deck        | 640p  | 60hz
-			Nintendo Switch 2 | 864p  | 60hz
-			Xbox Series S     | 1080p | 60hz
-			PlayStation 5     | 1440p | 60hz
-			Xbox Series X     | 1620p | 60hz
-			PlayStation 5 Pro | 2160p | 60hz
+		Steam Deck        | 640p  | 60hz
+		Nintendo Switch 2 | 864p  | 60hz
+		Xbox Series S     | 1080p | 60hz
+		PlayStation 5     | 1440p | 60hz
+		Xbox Series X     | 1620p | 60hz
+		PlayStation 5 Pro | 2160p | 60hz
+
+	Finally, while the plan above is focused on hardware raytracing, we'll want to start with a software-raytracing-only path. This is because we will likely need/want to do a simpler game to
+	start off - likely one using a restrained, on-a-rail, authored, scriptable 3D perspective. The closest reference point being Luigi's Mansion, which isn't quite fixed camera like old
+	Resident Evil, but is also not free-camera either, making it a solid balance for something needing full 3D without the cost that comes with player-controllable cameras. From here we can
+	ship this GI system like that (or at least get it working), then we can extend it with hardware raytracing later as needed.
+
+	It's also worth exploring a software BVH raytracing path, as Crytek's Neon Noir demo did back in 2017. This is being entertained as an idea because we're already going to try structuring
+	this system to run as efficiently as possible without hardware RT, including all kinds of tricks (such as abusing the properties of SDFs) to do as much work as possible *before* we start
+	firing off rays to gather hits and material info and stuff. So, if our BVH tracing only ends up being a small fraction of the overall frame, and we can cram it into a software compute kernel
+	rather than delegating to the hardware, we could probably get away with it for our first project (which is smaller and stuff) and then upgrade later for future projects with ease.
 */
