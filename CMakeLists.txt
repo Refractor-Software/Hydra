@@ -21,6 +21,12 @@ else ()
     add_compile_definitions(HYDRA_TARGET_ISA_AVX2=0)
 endif ()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_definitions(HYDRA_SHIPPING=1)
+else ()
+    add_compile_definitions(HYDRA_SHIPPING=0)
+endif ()
+
 add_subdirectory(kernel)
 
 add_subdirectory(core)
