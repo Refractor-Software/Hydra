@@ -14,6 +14,7 @@
 */
 
 #include "foundation/primitive/foundation_primitive_types.h"
+#include "foundation/string/foundation_string_view.h"
 
 #include "input/input.h"
 
@@ -26,6 +27,13 @@ typedef struct app_context
     u64   memorySize;
 
     input_queue *input;
+
+    /* Parsed process command line, UTF-8, kernel-owned for the process's lifetime. args[0] is
+     * the executable path itself (GetCommandLineW()-based parsing includes it), not the first
+     * user-supplied argument.
+     */
+    s32          argCount;
+    string_view *args;
 } app_context;
 
 /* Called once, after context->memory has been reserved/committed and before the first

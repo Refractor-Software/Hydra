@@ -20,6 +20,9 @@
 #define ReinterpretCast(To) (To)
 #endif
 
+/* TODO(will) Fix this up for C++ which doesn't have restrict for some incredibly stupid fucking reason that's between the C++ Standards Committe and God. */
+#define RESTRICT restrict
+
 #define PLATFORM_USE_DEFAULT_PRIMITIVE_INT 1
 #define PLATFORM_USE_DEFAULT_PRIMITIVE_FLT 1
 #define PLATFORM_USE_DEFAULT_PRIMITIVE_POINTER 1

@@ -13,6 +13,7 @@
 #include "win64/crash/win64_crash.h"
 #include "win64/log/win64_log.h"
 #include "win64/thread/win64_thread.h"
+#include "win64/commandline/win64_commandline.h"
 
 #include "application/application.h"
 
@@ -142,6 +143,7 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
 
     win64_log_init ();
     win64_crash_init ();
+    win64_command_line_init ();
 
     b8  running  = TRUE;
     int exitCode = 0;
@@ -182,6 +184,8 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
         context.memory      = appMemory;
         context.memorySize  = WIN64_APP_MEMORY_SIZE;
         context.input       = win64_input_queue_get ();
+        context.argCount    = win64_command_line_get_arg_count ();
+        context.args        = win64_command_line_get_args ();
 
         if (!application_init (&context))
         {

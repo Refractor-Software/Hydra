@@ -7,31 +7,26 @@
 #include "foundation/primitive/foundation_primitive_predef.h"
 #include "foundation/primitive/foundation_primitive_types.h"
 
-/* TODO(will) Consider making this private (move to src/foundation/memory/foundation_memory_allocator_pimpl.h) so that users only see this interface.
- *            You can argue that this adds indirection but
- *            1) LTO will probably sort it out in a static build for shipping, and
- *            2) if you're calling any allocator frequently in hot loops, your code is shit and you should fix it (allocate ahead-of-time, for example)
- *            AFAIK this means we'd need to do something like pimpl in C (maybe a plain u8 pimpl[MEMORY_ALLOCATOR_SIZE] that we reinterpret in implementation)
+/*
+    foundation_memory_allocator
+
+    The main front-end interface behind most memory allocation.
+    We take inspiration from Odin's approach to memory allocation and management.
+*/
+
+/**
+ * Generic memory allocator interface. It can be called with the memory_allocate and memory_free family of functions.
  */
 typedef struct memory_allocator memory_allocator;
 struct memory_allocator
 {
-    void *_context;
-    void *(*_alloc) (void *ctx, usize size);
-    void  (*_free)  (void *ctx, void *ptr);
+    u64 internal[1];
 };
 
-void *
-memory_allocate (memory_allocator *a, usize size)
-{
-    return a ? a->_alloc (a->_context, size) : 0;
-}
+void * memory_allocate       (memory_allocator * RESTRICT a, usize size, usize alignment);
+void * memory_allocate_array (memory_allocator * RESTRICT a, usize size, usize alignment, usize count);
+void   memory_free           (memory_allocator * RESTRICT a, void * RESTRICT block);
 
-void
-memory_free (memory_allocator *a, void *ptr)
-{
-    a ? a->_free (a->_context, ptr) : (void)(0);
-}
-
-#define memory_allocate_t(T, allocator)            StaticCast (T*) (memory_allocate (a, sizeof (T))
-#define memory_allocate_array_t(T, num, allocator) StaticCast (T*) (memory_allocate (a, sizeof (T) * num))
+/* TODO(will) use a more portable alignof specified in primitive predef (check for one provided by the compiler if pre-C11) */
+#define memory_allocate_type (T, allocator)              StaticCast (T*) (memory_allocate       (allocator, sizeof (T), alignof (T)))
+#define memory_allocate_array_type (T, allocator, count) StaticCast (T*) (memory_allocate_array (allocator, sizeof (T), alignof (T), count))

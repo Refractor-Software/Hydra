@@ -19,6 +19,12 @@ application_init (app_context *context)
 
     log_info ("application_init: engine started");
 
+    for (s32 i = 0; i < context->argCount; i += 1)
+    {
+        string_view arg = context->args[i];
+        log_info ("arg[%d]: %.*s", i, (int) arg.length, (const char *) arg.data);
+    }
+
     return 1;
 }
 

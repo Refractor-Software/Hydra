@@ -15,6 +15,12 @@
 #include "foundation/primitive/foundation_primitive_types.h"
 
 #include "foundation/memory/foundation_memory.h"
+#include "foundation/memory/foundation_memory_arena.h"
+#include "foundation/memory/foundation_memory_pool.h"
+
+#include "foundation/string/foundation_string_view.h"
+#include "foundation/string/foundation_string.h"
+#include "foundation/string/foundation_string_utf8.h"
 
 #include "foundation/reflection/foundation_reflection.h"
 
