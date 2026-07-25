@@ -40,4 +40,4 @@ heavily multithreaded codebase that's designed to be extended as needs evolve an
 | Xbox Series X                | 1920x1080              | 2560x1440              | 2880x1620              | 3840x2160         | 60hz      |
 | Xbox Series S                | 1536x864               | 1792x1008              | 1920x1080              | 2560x1440         | 60hz      |
 | Nintendo Switch 2 (Docked)   | 1536x864               | 1792x1008              | 1920x1080              | 2560x1440         | 60hz      |
-| Nintendo Switch 2 (Handheld) | 1056x594               | 1344x756               | 1440x810               | 2560x1440         | 60hz      |
+| Nintendo Switch 2 (Handheld) | 1056x594               | 1344x756               | 1440x810               | 1920x1080         | 60hz      |
