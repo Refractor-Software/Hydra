@@ -29,18 +29,20 @@ heavily multithreaded codebase that's designed to be extended as needs evolve an
 
 ### Hardware Performance Targets
 
-- **Input Resolution (Max)** is the target input resolution that we optimize to hit as often as possible.
-- **Input Resolution (Avg)** is for hard-to-predict bad cases (<10% of all gameplay time).
-- **Input Resolution (Min)** is for unpredictable worst-cases (<1% of all gameplay time).
+- **Input Resolution (T1)** is the target input resolution that we optimize to hit as often as possible.
+- **Input Resolution (T2)** is for hard-to-predict bad cases (<10% of all gameplay time).
+- **Input Resolution (T3)** is for unpredictable worst-cases (<1% of all gameplay time).
 
-| Platform                     | Input Resolution (Min) | Input Resolution (Avg) | Input Resolution (Max) | Output Resolution | Framerate |
-|------------------------------|------------------------|------------------------|------------------------|-------------------|-----------|
-| PlayStation 5                | 1920x1080              | 2304x1296              | 2560x1440              | 3840x2160         | 60hz      |
-| PlayStation 5 Pro            | 2304x1296              | 2688x1512              | 2880x1620              | 3840x2160         | 60hz      |
-| Xbox Series X                | 2048x1152              | 2560x1440              | 2688x1512              | 3840x2160         | 60hz      |
-| Xbox Series S                | 1536x864               | 1792x1008              | 1920x1080              | 2560x1440         | 60hz      |
-| Nintendo Switch 2 (Docked)   | 1536x864               | 1792x1008              | 1920x1080              | 2560x1440         | 60hz      |
-| Nintendo Switch 2 (Handheld) | 1056x594               | 1344x756               | 1440x810               | 1920x1080         | 60hz      |
+Acceptable dynamic resolution for each platform is in the range [T3, T1].
+
+| Platform                     | Input Resolution (T3) | Input Resolution (T2) | Input Resolution (T1) | Output Resolution | Framerate |
+|------------------------------|-----------------------|-----------------------|-----------------------|-------------------|-----------|
+| PlayStation 5                | 1920x1080             | 2304x1296             | 2560x1440             | 3840x2160         | 60hz      |
+| PlayStation 5 Pro            | 2304x1296             | 2688x1512             | 2880x1620             | 3840x2160         | 60hz      |
+| Xbox Series X                | 2048x1152             | 2560x1440             | 2688x1512             | 3840x2160         | 60hz      |
+| Xbox Series S                | 1536x864              | 1792x1008             | 1920x1080             | 2560x1440         | 60hz      |
+| Nintendo Switch 2 (Docked)   | 1536x864              | 1792x1008             | 1920x1080             | 2560x1440         | 60hz      |
+| Nintendo Switch 2 (Handheld) | 1056x594              | 1344x756              | 1440x810              | 1920x1080         | 60hz      |
 
 ## Language
 
