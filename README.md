@@ -41,3 +41,12 @@ heavily multithreaded codebase that's designed to be extended as needs evolve an
 | Xbox Series S                | 1536x864               | 1792x1008              | 1920x1080              | 2560x1440         | 60hz      |
 | Nintendo Switch 2 (Docked)   | 1536x864               | 1792x1008              | 1920x1080              | 2560x1440         | 60hz      |
 | Nintendo Switch 2 (Handheld) | 1056x594               | 1344x756               | 1440x810               | 1920x1080         | 60hz      |
+
+## Language
+
+Hydra is written in C/C++17. Most of it is C and we very occasionally use C++ features where they unambiguously add value. Those C++ features are
+largely enhancements and the engine's API surface (what matters for external consumers, such as Hydra Studio) is fully usable with C alone. Depending
+on your environment C89 might even be enough to use the API with precompiled binaries, but C17 is our officially supported target, and C++17 is
+required to build the engine internals themselves or use the optional C++ layer of the included APIs.
+
+See the [style guide](doc/README-style_guide.md) for more information. (Note: It's still a bit outdated, but we'll get it up to speed soon.)
