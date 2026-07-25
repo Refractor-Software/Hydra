@@ -37,7 +37,7 @@ heavily multithreaded codebase that's designed to be extended as needs evolve an
 |------------------------------|------------------------|------------------------|------------------------|-------------------|-----------|
 | PlayStation 5                | 1920x1080              | 2304x1296              | 2560x1440              | 3840x2160         | 60hz      |
 | PlayStation 5 Pro            | 2304x1296              | 2688x1512              | 2880x1620              | 3840x2160         | 60hz      |
-| Xbox Series X                | 1920x1080              | 2560x1440              | 2688x1512              | 3840x2160         | 60hz      |
+| Xbox Series X                | 2048x1152              | 2560x1440              | 2688x1512              | 3840x2160         | 60hz      |
 | Xbox Series S                | 1536x864               | 1792x1008              | 1920x1080              | 2560x1440         | 60hz      |
 | Nintendo Switch 2 (Docked)   | 1536x864               | 1792x1008              | 1920x1080              | 2560x1440         | 60hz      |
 | Nintendo Switch 2 (Handheld) | 1056x594               | 1344x756               | 1440x810               | 1920x1080         | 60hz      |
