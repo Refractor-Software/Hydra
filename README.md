@@ -13,10 +13,10 @@ used by the Refractor Software game development and production units.
 > Software's game development needs which emphasize data-driven and data-oriented design, particularly using data assets, data tables, and
 > composition.
 >
-> Because of this design, Hydra can be extended to support theoretically any game's needs, but it doesn't have a general-purpose scripting
-> language designed to be used by noobs and script kiddies. You need to know what the hell you're doing. If you want a general-purpose hammer
-> that little Timmy can come home and make a AAA game overnight with visual scripting or something like that, then **Hydra is not the engine
-> for you** and you should probably look elsewhere.
+> Because of this design, Hydra can be extended to support theoretically any game's needs, but doing so requires knowledge of C/C++ programming
+> to add functionality with plugins. Hydra provides the infrastructure to make this far simpler/easier than traditional C/C++ education would
+> have you believe, but if that still sounds like too much for you, then then **Hydra is not the engine for you** and you should probably look
+> elsewhere.
 >
 > Refractor Software makes zero guarantees that Hydra is suitable for your use case, and will not make it work for you. See the
 > [license](COPYING) for more information.
@@ -47,6 +47,7 @@ heavily multithreaded codebase that's designed to be extended as needs evolve an
 Hydra is written in C/C++17. Most of it is C and we very occasionally use C++ features where they unambiguously add value. Those C++ features are
 largely enhancements and the engine's API surface (what matters for external consumers, such as Hydra Studio) is fully usable with C alone. Depending
 on your environment C89 might even be enough to use the API with precompiled binaries, but C17 is our officially supported target, and C++17 is
-required to build the engine internals themselves or use the optional C++ layer of the included APIs.
+required to build the engine internals themselves or use the optional C++ layer of the included APIs. This is a case where we think using the term
+"C/C++" instead of *just* "C" or "C++" is justifiable.
 
 See the [style guide](doc/README-style_guide.md) for more information. (Note: It's still a bit outdated, but we'll get it up to speed soon.)
