@@ -403,6 +403,7 @@ Note that implementation functions use line breaks between the return type and f
 Pulling this from the [Linux kernel style](https://www.kernel.org/doc/html/latest/process/coding-style.html) for the sake of having an easy and complete example (albeit slightly modified):
 
 ---
+
 (begin Linux Kernel Style)
 ```c
 __init void * __must_check action(enum magic value, size_t size, u8 count,
@@ -429,7 +430,9 @@ static __always_inline __init __printf(4, 5) void * __must_check action(enum mag
        ...
 }
 ```
+
 (end Linux Kernel Style)
+
 ---
 
 For our own code, in a lot of cases many of these are irrelevant, but if for any reason they were to become relevant, this is what we follow. We also typically don't use these exact names. For example instead of `__always_inline` we have `RE_ALWAYS_INLINE_HINT`, and instead of `static` we have separate `internal`/`global`/`local_persist` that are each defined to `static` but in context make code much easier to read/understand.
