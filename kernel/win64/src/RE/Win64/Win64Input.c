@@ -52,40 +52,40 @@ global const ReInputKey gWin64ScanCodeToKey[256] =
  * the numpad), and the super keys, which are only ever sent extended.
  */
 internal ReInputKey
-Win64_Input_KeyFromScanCode (ReUint32 scanCode, ReBool isExtended)
+Win64_Input_KeyFromScanCode( ReUint32 scanCode, ReBool isExtended )
 {
-    if (isExtended)
+    if ( isExtended )
     {
-        switch (scanCode)
+        switch ( scanCode )
         {
-            case 0x1D: return ReInputKey_RightControl;
-            case 0x38: return ReInputKey_RightAlt;
-            case 0x47: return ReInputKey_Home;
-            case 0x48: return ReInputKey_ArrowUp;
-            case 0x49: return ReInputKey_PageUp;
-            case 0x4B: return ReInputKey_ArrowLeft;
-            case 0x4D: return ReInputKey_ArrowRight;
-            case 0x4F: return ReInputKey_End;
-            case 0x50: return ReInputKey_ArrowDown;
-            case 0x51: return ReInputKey_PageDown;
-            case 0x52: return ReInputKey_Insert;
-            case 0x53: return ReInputKey_Delete;
-            case 0x5B: return ReInputKey_LeftSuper;
-            case 0x5C: return ReInputKey_RightSuper;
-            default: break;
+        case 0x1D: return ReInputKey_RightControl;
+        case 0x38: return ReInputKey_RightAlt;
+        case 0x47: return ReInputKey_Home;
+        case 0x48: return ReInputKey_ArrowUp;
+        case 0x49: return ReInputKey_PageUp;
+        case 0x4B: return ReInputKey_ArrowLeft;
+        case 0x4D: return ReInputKey_ArrowRight;
+        case 0x4F: return ReInputKey_End;
+        case 0x50: return ReInputKey_ArrowDown;
+        case 0x51: return ReInputKey_PageDown;
+        case 0x52: return ReInputKey_Insert;
+        case 0x53: return ReInputKey_Delete;
+        case 0x5B: return ReInputKey_LeftSuper;
+        case 0x5C: return ReInputKey_RightSuper;
+        default: break;
         }
     }
     else
     {
-        switch (scanCode)
+        switch ( scanCode )
         {
-            case 0x1D: return ReInputKey_LeftControl;
-            case 0x38: return ReInputKey_LeftAlt;
-            default: break;
+        case 0x1D: return ReInputKey_LeftControl;
+        case 0x38: return ReInputKey_LeftAlt;
+        default: break;
         }
     }
 
-    if (scanCode >= 256)
+    if ( scanCode >= 256 )
     {
         return ReInputKey_Unknown;
     }
@@ -94,7 +94,7 @@ Win64_Input_KeyFromScanCode (ReUint32 scanCode, ReBool isExtended)
 }
 
 internal void
-Win64_Input_PushKeyEvent (ReInputKey key, ReBool isDown, ReBool isRepeat)
+Win64_Input_PushKeyEvent( ReInputKey key, ReBool isDown, ReBool isRepeat )
 {
     ReInputEvent event;
     event.kind             = ReInputEventKind_Key;
@@ -102,110 +102,110 @@ Win64_Input_PushKeyEvent (ReInputKey key, ReBool isDown, ReBool isRepeat)
     event.key.isDown        = isDown;
     event.key.isRepeat      = isRepeat;
 
-    RE_Input_PushEvent (&gWin64InputQueue, event);
+    RE_Input_PushEvent( &gWin64InputQueue, event );
 
-    if (key != ReInputKey_Unknown)
+    if ( key != ReInputKey_Unknown )
     {
         gWin64KeyHeld[key] = isDown;
     }
 }
 
 internal void
-Win64_Input_PushMouseButtonEvent (ReInputMouseButton button, ReBool isDown)
+Win64_Input_PushMouseButtonEvent( ReInputMouseButton button, ReBool isDown )
 {
     ReInputEvent event;
     event.kind                  = ReInputEventKind_MouseButton;
     event.mouseButton.button    = button;
     event.mouseButton.isDown    = isDown;
 
-    RE_Input_PushEvent (&gWin64InputQueue, event);
+    RE_Input_PushEvent( &gWin64InputQueue, event );
 }
 
 void
-Win64_Input_Reset (void)
+Win64_Input_Reset( void )
 {
-    RE_Input_ClearQueue (&gWin64InputQueue);
+    RE_Input_ClearQueue( &gWin64InputQueue );
 }
 
 void
-Win64_Input_HandleMessage (UINT message, WPARAM wParam, LPARAM lParam)
+Win64_Input_HandleMessage( UINT message, WPARAM wParam, LPARAM lParam )
 {
-    switch (message)
+    switch ( message )
     {
-        case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-        case WM_KEYUP:
-        case WM_SYSKEYUP:
-        {
-            ReUint32 scanCode   = (ReUint32) ((lParam >> 16) & 0xFF);
-            ReBool  isExtended = (ReBool) ((lParam >> 24) & 0x1);
-            ReBool  wasDown    = (ReBool) ((lParam >> 30) & 0x1);
-            ReBool  isUp       = (ReBool) ((lParam >> 31) & 0x1);
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+    {
+        ReUint32 scanCode   = (ReUint32) ((lParam >> 16) & 0xFF);
+        ReBool  isExtended = (ReBool) ((lParam >> 24) & 0x1);
+        ReBool  wasDown    = (ReBool) ((lParam >> 30) & 0x1);
+        ReBool  isUp       = (ReBool) ((lParam >> 31) & 0x1);
 
-            ReInputKey key = Win64_Input_KeyFromScanCode (scanCode, isExtended);
+        ReInputKey key = Win64_Input_KeyFromScanCode( scanCode, isExtended );
 
-            Win64_Input_PushKeyEvent (key, (ReBool) !isUp, (ReBool) (wasDown && !isUp));
-            break;
-        }
+        Win64_Input_PushKeyEvent( key, (ReBool) !isUp, (ReBool) (wasDown && !isUp) );
+        break;
+    }
 
-        case WM_MOUSEMOVE:
-        {
-            ReInputEvent event;
-            event.kind         = ReInputEventKind_MouseMove;
-            event.mouseMove.x  = (ReSint32) (short) LOWORD (lParam);
-            event.mouseMove.y  = (ReSint32) (short) HIWORD (lParam);
+    case WM_MOUSEMOVE:
+    {
+        ReInputEvent event;
+        event.kind         = ReInputEventKind_MouseMove;
+        event.mouseMove.x  = (ReSint32) (short) LOWORD( lParam );
+        event.mouseMove.y  = (ReSint32) (short) HIWORD( lParam );
 
-            RE_Input_PushEvent (&gWin64InputQueue, event);
-            break;
-        }
+        RE_Input_PushEvent( &gWin64InputQueue, event );
+        break;
+    }
 
-        case WM_LBUTTONDOWN: Win64_Input_PushMouseButtonEvent (ReInputMouseButton_Left, RE_True);    break;
-        case WM_LBUTTONUP:   Win64_Input_PushMouseButtonEvent (ReInputMouseButton_Left, RE_False);   break;
-        case WM_RBUTTONDOWN: Win64_Input_PushMouseButtonEvent (ReInputMouseButton_Right, RE_True);   break;
-        case WM_RBUTTONUP:   Win64_Input_PushMouseButtonEvent (ReInputMouseButton_Right, RE_False);  break;
-        case WM_MBUTTONDOWN: Win64_Input_PushMouseButtonEvent (ReInputMouseButton_Middle, RE_True);  break;
-        case WM_MBUTTONUP:   Win64_Input_PushMouseButtonEvent (ReInputMouseButton_Middle, RE_False); break;
+    case WM_LBUTTONDOWN: Win64_Input_PushMouseButtonEvent( ReInputMouseButton_Left, RE_True );    break;
+    case WM_LBUTTONUP:   Win64_Input_PushMouseButtonEvent( ReInputMouseButton_Left, RE_False );   break;
+    case WM_RBUTTONDOWN: Win64_Input_PushMouseButtonEvent( ReInputMouseButton_Right, RE_True );   break;
+    case WM_RBUTTONUP:   Win64_Input_PushMouseButtonEvent( ReInputMouseButton_Right, RE_False );  break;
+    case WM_MBUTTONDOWN: Win64_Input_PushMouseButtonEvent( ReInputMouseButton_Middle, RE_True );  break;
+    case WM_MBUTTONUP:   Win64_Input_PushMouseButtonEvent( ReInputMouseButton_Middle, RE_False ); break;
 
-        case WM_XBUTTONDOWN:
-        case WM_XBUTTONUP:
-        {
-            ReInputMouseButton button = (GET_XBUTTON_WPARAM (wParam) == XBUTTON1)
-                ? ReInputMouseButton_X1
-                : ReInputMouseButton_X2;
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+    {
+        ReInputMouseButton button = (GET_XBUTTON_WPARAM( wParam ) == XBUTTON1)
+            ? ReInputMouseButton_X1
+            : ReInputMouseButton_X2;
 
-            Win64_Input_PushMouseButtonEvent (button, (ReBool) (message == WM_XBUTTONDOWN));
-            break;
-        }
+        Win64_Input_PushMouseButtonEvent( button, (ReBool) (message == WM_XBUTTONDOWN) );
+        break;
+    }
 
-        case WM_MOUSEWHEEL:
-        {
-            ReInputEvent event;
-            event.kind             = ReInputEventKind_MouseWheel;
-            event.mouseWheel.delta = GET_WHEEL_DELTA_WPARAM (wParam);
+    case WM_MOUSEWHEEL:
+    {
+        ReInputEvent event;
+        event.kind             = ReInputEventKind_MouseWheel;
+        event.mouseWheel.delta = GET_WHEEL_DELTA_WPARAM( wParam );
 
-            RE_Input_PushEvent (&gWin64InputQueue, event);
-            break;
-        }
+        RE_Input_PushEvent( &gWin64InputQueue, event );
+        break;
+    }
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 
 void
-Win64_Input_ReleaseAllHeldKeys (void)
+Win64_Input_ReleaseAllHeldKeys( void )
 {
-    for (ReUint32 i = 0; i < ReInputKey_Count; i += 1)
+    for ( ReUint32 i = 0; i < ReInputKey_Count; i += 1 )
     {
-        if (gWin64KeyHeld[i])
+        if ( gWin64KeyHeld[i] )
         {
-            Win64_Input_PushKeyEvent ((ReInputKey) i, RE_False, RE_False);
+            Win64_Input_PushKeyEvent( (ReInputKey) i, RE_False, RE_False );
         }
     }
 }
 
 ReInputQueue *
-Win64_Input_GetQueue (void)
+Win64_Input_GetQueue( void )
 {
     return &gWin64InputQueue;
 }

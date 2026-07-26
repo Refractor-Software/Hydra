@@ -39,12 +39,12 @@ typedef struct ReAppContext
 /* Called once, after context->memory has been reserved/committed and before the first
  * RE_Application_Tick(). Returns 0 if the engine failed to start.
  */
-ReBool RE_Application_Init (ReAppContext *context);
+ReBool RE_Application_Init( ReAppContext *context );
 
 /* Called once per kernel tick, after the platform has drained its own per-tick events into
  * context (e.g. the input queue) and computed deltaTime.
  */
-void RE_Application_Tick (ReAppContext *context, ReFloat32 deltaTime);
+void RE_Application_Tick( ReAppContext *context, ReFloat32 deltaTime );
 
 /* Called once, after the last RE_Application_Tick(), before context->memory is released. */
-void RE_Application_Shutdown (ReAppContext *context);
+void RE_Application_Shutdown( ReAppContext *context );

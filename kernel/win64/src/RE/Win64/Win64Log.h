@@ -19,9 +19,9 @@
 /* Attaches to a parent console if launched from one, otherwise allocates a new one. Enables
  * VT100 color codes. Call once, before anything logs.
  */
-void Win64_Log_Init (void);
+void Win64_Log_Init( void );
 
 /* Releases the console (if one was allocated/attached). Call once, after everything is done
  * logging.
  */
-void Win64_Log_Shutdown (void);
+void Win64_Log_Shutdown( void );

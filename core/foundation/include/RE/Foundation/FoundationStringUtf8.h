@@ -26,20 +26,20 @@
  * running on malformed input from a corrupted asset or command-line argument, don't halt.
  * remainingLength must be > 0 - decoding with nothing left is a caller contract violation.
  */
-ReUint64 RE_Utf8_Decode (const ReUint8 *bytes, ReUint64 remainingLength, ReUint32 *outCodepoint);
+ReUint64 RE_Utf8_Decode( const ReUint8 *bytes, ReUint64 remainingLength, ReUint32 *outCodepoint );
 
 /* Encodes one codepoint into outBytes (needs up to 4 bytes) and returns how many were written.
  * codepoint must be a valid Unicode scalar value (<= 0x10FFFF, not a surrogate) - unlike decode(),
  * this takes a caller-controlled value, so an invalid codepoint here is a programmer error and
  * asserts rather than substituting.
  */
-ReUint64 RE_Utf8_Encode (ReUint32 codepoint, ReUint8 outBytes[4]);
+ReUint64 RE_Utf8_Encode( ReUint32 codepoint, ReUint8 outBytes[4] );
 
 /* True iff every codepoint in sv decoded cleanly - no malformed/truncated sequences anywhere. */
-ReBool RE_Utf8_IsValid (ReStringView sv);
+ReBool RE_Utf8_IsValid( ReStringView sv );
 
 /* O(n) by construction - full-view iteration is unavoidable to count codepoints in UTF-8. */
-ReUint64 RE_Utf8_CodepointCount (ReStringView sv);
+ReUint64 RE_Utf8_CodepointCount( ReStringView sv );
 
 typedef struct ReUtf8Iterator
 {
@@ -47,9 +47,9 @@ typedef struct ReUtf8Iterator
     ReUint64        offset;
 } ReUtf8Iterator;
 
-ReUtf8Iterator RE_Utf8_IteratorCreate (ReStringView sv);
+ReUtf8Iterator RE_Utf8_IteratorCreate( ReStringView sv );
 
 /* False at end-of-view (outCodepoint untouched). Malformed sequences are substituted the same
  * way RE_Utf8_Decode() does, never stalling the iterator.
  */
-ReBool RE_Utf8_IteratorNext (ReUtf8Iterator *it, ReUint32 *outCodepoint);
+ReBool RE_Utf8_IteratorNext( ReUtf8Iterator *it, ReUint32 *outCodepoint );

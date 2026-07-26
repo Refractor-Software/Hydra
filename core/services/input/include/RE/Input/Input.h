@@ -204,5 +204,5 @@ typedef struct ReInputQueue
  * safer default than crashing on an input burst under real play, but the capacity is generous
  * enough that this should never actually happen from legitimate input in a single tick.
  */
-void RE_Input_PushEvent (ReInputQueue *queue, ReInputEvent event);
-void RE_Input_ClearQueue (ReInputQueue *queue);
+void RE_Input_PushEvent( ReInputQueue *queue, ReInputEvent event );
+void RE_Input_ClearQueue( ReInputQueue *queue );

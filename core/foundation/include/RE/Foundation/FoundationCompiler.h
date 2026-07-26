@@ -40,7 +40,7 @@
 #if defined( _MSC_VER )
 #define RE_ALWAYS_INLINE_HINT __forceinline
 #elif defined( __GNUC__ ) || defined( __clang__ )
-#define RE_ALWAYS_INLINE_HINT inline __attribute__(( always_inline ))
+#define RE_ALWAYS_INLINE_HINT inline __attribute__( ( always_inline ) )
 #else
 #define RE_ALWAYS_INLINE_HINT inline
 #endif

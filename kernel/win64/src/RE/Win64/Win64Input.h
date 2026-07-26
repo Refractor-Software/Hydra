@@ -17,14 +17,14 @@
 #include <RE/Input/Input.h>
 
 /* Clears the queue - call once per tick, before draining the Win32 message queue. */
-void Win64_Input_Reset (void);
+void Win64_Input_Reset( void );
 
 /* Feeds a single Win32 message through input translation. Ignores anything it doesn't care about. */
-void Win64_Input_HandleMessage (UINT message, WPARAM wParam, LPARAM lParam);
+void Win64_Input_HandleMessage( UINT message, WPARAM wParam, LPARAM lParam );
 
 /* Releases (as synthetic key-up events) any keys still marked held - call on focus loss so a key
  * held during an alt-tab doesn't read as stuck down forever.
  */
-void Win64_Input_ReleaseAllHeldKeys (void);
+void Win64_Input_ReleaseAllHeldKeys( void );
 
-ReInputQueue * Win64_Input_GetQueue (void);
+ReInputQueue * Win64_Input_GetQueue( void );

@@ -15,4 +15,4 @@
 /* Polls all RE_INPUT_GAMEPAD_COUNT controller slots and pushes whatever changed since the last
  * call into queue - call once per tick.
  */
-void Win64_Gamepad_Poll (ReInputQueue *queue);
+void Win64_Gamepad_Poll( ReInputQueue *queue );

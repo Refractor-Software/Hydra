@@ -21,7 +21,7 @@
 #include <RE/Foundation/FoundationStringView.h>
 
 /* Call once, early in wWinMain, after log/crash init. */
-void Win64_CommandLine_Init (void);
+void Win64_CommandLine_Init( void );
 
-ReSint32          Win64_CommandLine_GetArgCount (void);
-ReStringView *Win64_CommandLine_GetArgs      (void);
+ReSint32          Win64_CommandLine_GetArgCount( void );
+ReStringView *Win64_CommandLine_GetArgs( void );

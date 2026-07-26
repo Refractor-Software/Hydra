@@ -29,20 +29,20 @@ typedef struct RePool
 /* Asserts if memorySize is too small to hold even one aligned block - that's a config-time
  * programmer error (the pool was sized wrong), not a runtime condition.
  */
-void RE_Pool_Init (RePool *p, void *memory, ReUint64 memorySize, ReUint64 blockSize, ReUint64 blockAlignment);
+void RE_Pool_Init( RePool *p, void *memory, ReUint64 memorySize, ReUint64 blockSize, ReUint64 blockAlignment );
 
 /* Returns nullptr if the pool is exhausted - expected/checkable, not a programmer error. */
-void * RE_Pool_Alloc (RePool *p);
+void * RE_Pool_Alloc( RePool *p );
 
 /* Asserts if ptr doesn't actually belong to this pool (out of range or misaligned to the block
  * stride) - catches the most common pool-misuse footgun (foreign pointer, double-free-shaped
  * corruption) cheaply.
  */
-void RE_Pool_Free (RePool *p, void *ptr);
+void RE_Pool_Free( RePool *p, void *ptr );
 
 /* Bridges into the generic ReAllocator interface. The bridged _alloc returns nullptr (not
  * assert) if the requested size doesn't fit a block - through the generic interface, "can't
  * satisfy this request" and "out of memory" are indistinguishable to the caller, same as any
  * other ReAllocator failure.
  */
-ReAllocator RE_Pool_AsAllocator (RePool *p);
+ReAllocator RE_Pool_AsAllocator( RePool *p );

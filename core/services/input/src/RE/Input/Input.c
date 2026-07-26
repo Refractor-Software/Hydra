@@ -5,9 +5,9 @@
 #include <RE/Input/Input.h>
 
 void
-RE_Input_PushEvent (ReInputQueue *queue, ReInputEvent event)
+RE_Input_PushEvent( ReInputQueue *queue, ReInputEvent event )
 {
-    if (queue->count >= RE_INPUT_QUEUE_CAPACITY)
+    if ( queue->count >= RE_INPUT_QUEUE_CAPACITY )
     {
         return;
     }
@@ -17,7 +17,7 @@ RE_Input_PushEvent (ReInputQueue *queue, ReInputEvent event)
 }
 
 void
-RE_Input_ClearQueue (ReInputQueue *queue)
+RE_Input_ClearQueue( ReInputQueue *queue )
 {
     queue->count = 0;
 }

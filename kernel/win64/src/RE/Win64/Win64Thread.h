@@ -18,7 +18,7 @@
  * convention (older tooling), unconditionally - they inform different debugger generations,
  * this isn't a fallback chain.
  */
-void Win64_Thread_SetThreadName (HANDLE thread, const wchar_t *name);
+void Win64_Thread_SetThreadName( HANDLE thread, const wchar_t *name );
 
 /* Win64_Thread_SetThreadName (GetCurrentThread (), name). */
-void Win64_Thread_SetCurrentThreadName (const wchar_t *name);
+void Win64_Thread_SetCurrentThreadName( const wchar_t *name );

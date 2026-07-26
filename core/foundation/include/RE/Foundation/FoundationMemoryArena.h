@@ -32,24 +32,24 @@ typedef struct ReArenaMarker
     ReUint64 offset;
 } ReArenaMarker;
 
-void RE_Arena_Init (ReArena *a, void *memory, ReUint64 size);
+void RE_Arena_Init( ReArena *a, void *memory, ReUint64 size );
 
 /* Returns nullptr if the arena doesn't have enough remaining space - an arena running out is an
  * expected, checkable condition (e.g. a bounded per-frame budget), not a programmer error.
  * alignment must be a nonzero power of two; violating that is a programmer error and asserts.
  */
-void * RE_Arena_Alloc (ReArena *a, ReUint64 size, ReUint64 alignment);
+void * RE_Arena_Alloc( ReArena *a, ReUint64 size, ReUint64 alignment );
 
 /* Resets the arena to empty - equivalent to RE_Arena_ResetToMarker() with a marker taken right
  * after RE_Arena_Init().
  */
-void RE_Arena_Reset (ReArena *a);
+void RE_Arena_Reset( ReArena *a );
 
-ReArenaMarker RE_Arena_GetMarker (const ReArena *a);
-void         RE_Arena_ResetToMarker (ReArena *a, ReArenaMarker marker);
+ReArenaMarker RE_Arena_GetMarker( const ReArena *a );
+void         RE_Arena_ResetToMarker( ReArena *a, ReArenaMarker marker );
 
 /* Bridges into the generic ReAllocator interface (RE_MEMORY_DEFAULT_ALIGNMENT only, since the
  * interface has no alignment parameter of its own). _free is a documented no-op - bump allocators
  * don't support freeing individual allocations, only bulk reset.
  */
-ReAllocator RE_Arena_AsAllocator (ReArena *a);
+ReAllocator RE_Arena_AsAllocator( ReArena *a );
