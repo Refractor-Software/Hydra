@@ -1,12 +1,12 @@
-add_library(log STATIC)
+add_library(com.refractor.core.services.log STATIC)
 
-target_include_directories(log PUBLIC include)
-target_include_directories(log PRIVATE src)
+target_include_directories(com.refractor.core.services.log PUBLIC include)
+target_include_directories(com.refractor.core.services.log PRIVATE src)
 
 file(GLOB_RECURSE log_headers "include/*.h")
 file(GLOB_RECURSE log_sources "src/*.h" "src/*.c")
 
-target_sources(log PUBLIC ${log_headers})
-target_sources(log PRIVATE ${log_sources})
+target_sources(com.refractor.core.services.log PUBLIC ${log_headers})
+target_sources(com.refractor.core.services.log PRIVATE ${log_sources})
 
-target_link_libraries(log PUBLIC foundation)
+target_link_libraries(com.refractor.core.services.log PUBLIC com.refractor.core.foundation)
