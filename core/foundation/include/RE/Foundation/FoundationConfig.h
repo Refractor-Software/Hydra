@@ -1,10 +1,9 @@
 /* SPDX-License-Identifier: Zlib */
 /* Copyright (c) William Pimentel-Tonche and contributors. All rights reserved. */
 
-#ifndef foundation_config_h
-#define foundation_config_h
+#pragma once
 
-/*	foundation_config.h
+/*	FoundationConfig.h
 
 	Exposes interfaces used to read/write configuration files.
 
@@ -17,5 +16,3 @@
 
 	Note this isn't responsible for file I/O in any way. You are responsible for getting the bytes into memory. This just reads/writes to that memory.
 */
-
-#endif /* foundation_config_h */

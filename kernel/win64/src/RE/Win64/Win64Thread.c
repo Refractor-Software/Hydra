@@ -4,10 +4,10 @@
 
 #include "RE/Win64/Win64Thread.h"
 
-typedef HRESULT (WINAPI *win64_pfn_set_thread_description) (HANDLE, PCWSTR);
+typedef HRESULT (WINAPI *ReWin64PfnSetThreadDescription) (HANDLE, PCWSTR);
 
-static void
-win64_thread_set_thread_description (HANDLE thread, const wchar_t *name)
+internal void
+Win64_Thread_SetThreadDescription (HANDLE thread, const wchar_t *name)
 {
     HMODULE kernel32 = GetModuleHandleW (L"kernel32.dll");
     if (!kernel32)
@@ -15,8 +15,8 @@ win64_thread_set_thread_description (HANDLE thread, const wchar_t *name)
         return;
     }
 
-    win64_pfn_set_thread_description setThreadDescription =
-        (win64_pfn_set_thread_description) (void *) GetProcAddress (kernel32, "SetThreadDescription");
+    ReWin64PfnSetThreadDescription setThreadDescription =
+        (ReWin64PfnSetThreadDescription) (void *) GetProcAddress (kernel32, "SetThreadDescription");
 
     if (setThreadDescription)
     {
@@ -25,13 +25,13 @@ win64_thread_set_thread_description (HANDLE thread, const wchar_t *name)
 }
 
 #pragma pack(push, 8)
-typedef struct win64_thread_name_info
+typedef struct ReWin64ThreadNameInfo
 {
     DWORD  type;
     LPCSTR name;
     DWORD  threadId;
     DWORD  flags;
-} win64_thread_name_info;
+} ReWin64ThreadNameInfo;
 #pragma pack(pop)
 
 /* The classic "magic exception" convention for naming threads, predating SetThreadDescription -
@@ -39,13 +39,13 @@ typedef struct win64_thread_name_info
  * debugger attached to observe it can otherwise surface as a real (harmless) exception, so it's
  * wrapped in its own handler per Microsoft's documented idiom.
  */
-static void
-win64_thread_raise_legacy_name_exception (DWORD threadId, const wchar_t *name)
+internal void
+Win64_Thread_RaiseLegacyNameException (DWORD threadId, const wchar_t *name)
 {
     char narrowName[64];
     WideCharToMultiByte (CP_UTF8, 0, name, -1, narrowName, sizeof (narrowName), NULL, NULL);
 
-    win64_thread_name_info info;
+    ReWin64ThreadNameInfo info;
     info.type     = 0x1000;
     info.name     = narrowName;
     info.threadId = threadId;
@@ -61,14 +61,14 @@ win64_thread_raise_legacy_name_exception (DWORD threadId, const wchar_t *name)
 }
 
 void
-win64_thread_set_thread_name (HANDLE thread, const wchar_t *name)
+Win64_Thread_SetThreadName (HANDLE thread, const wchar_t *name)
 {
-    win64_thread_set_thread_description (thread, name);
-    win64_thread_raise_legacy_name_exception (GetThreadId (thread), name);
+    Win64_Thread_SetThreadDescription (thread, name);
+    Win64_Thread_RaiseLegacyNameException (GetThreadId (thread), name);
 }
 
 void
-win64_thread_set_current_thread_name (const wchar_t *name)
+Win64_Thread_SetCurrentThreadName (const wchar_t *name)
 {
-    win64_thread_set_thread_name (GetCurrentThread (), name);
+    Win64_Thread_SetThreadName (GetCurrentThread (), name);
 }

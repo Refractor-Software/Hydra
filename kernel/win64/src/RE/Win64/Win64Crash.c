@@ -10,8 +10,8 @@
 
 #include <RE/Foundation/FoundationPrimitiveTypes.h>
 
-static b8
-win64_crash_write_dump (EXCEPTION_POINTERS *exceptionPointers, wchar_t *dumpPath, u32 dumpPathCapacity)
+internal ReBool
+Win64_Crash_WriteDump (EXCEPTION_POINTERS *exceptionPointers, wchar_t *dumpPath, ReUint32 dumpPathCapacity)
 {
     wchar_t moduleDirectory[MAX_PATH];
     GetModuleFileNameW (NULL, moduleDirectory, MAX_PATH);
@@ -36,7 +36,7 @@ win64_crash_write_dump (EXCEPTION_POINTERS *exceptionPointers, wchar_t *dumpPath
     HANDLE file = CreateFileW (dumpPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (file == INVALID_HANDLE_VALUE)
     {
-        return 0;
+        return RE_False;
     }
 
     MINIDUMP_EXCEPTION_INFORMATION dumpExceptionInfo;
@@ -47,7 +47,7 @@ win64_crash_write_dump (EXCEPTION_POINTERS *exceptionPointers, wchar_t *dumpPath
     MINIDUMP_TYPE dumpType = (MINIDUMP_TYPE) (
         MiniDumpWithDataSegs | MiniDumpWithHandleData | MiniDumpWithThreadInfo | MiniDumpWithIndirectlyReferencedMemory);
 
-    b8 wrote = (b8) MiniDumpWriteDump (
+    ReBool wrote = (ReBool) MiniDumpWriteDump (
         GetCurrentProcess (), GetCurrentProcessId (), file, dumpType, &dumpExceptionInfo, NULL, NULL);
 
     CloseHandle (file);
@@ -56,17 +56,17 @@ win64_crash_write_dump (EXCEPTION_POINTERS *exceptionPointers, wchar_t *dumpPath
 }
 
 void
-win64_crash_init (void)
+Win64_Crash_Init (void)
 {
     SymSetOptions (SYMOPT_DEFERRED_LOADS | SYMOPT_UNDNAME);
     SymInitialize (GetCurrentProcess (), NULL, TRUE);
 }
 
 LONG WINAPI
-win64_crash_exception_filter (EXCEPTION_POINTERS *exceptionPointers)
+Win64_Crash_ExceptionFilter (EXCEPTION_POINTERS *exceptionPointers)
 {
     wchar_t dumpPath[MAX_PATH];
-    b8 wroteDump = win64_crash_write_dump (exceptionPointers, dumpPath, MAX_PATH);
+    ReBool wroteDump = Win64_Crash_WriteDump (exceptionPointers, dumpPath, MAX_PATH);
 
     wchar_t message[MAX_PATH + 128];
     if (wroteDump)

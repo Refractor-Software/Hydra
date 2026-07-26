@@ -8,18 +8,18 @@
 
 #define STRING_MIN_CAPACITY 16
 
-b8
-string_create (string *s, memory_allocator *a, string_view initial)
+ReBool
+RE_String_Create (ReString *s, ReAllocator *a, ReStringView initial)
 {
-    usize capacity = initial.length > STRING_MIN_CAPACITY ? initial.length : STRING_MIN_CAPACITY;
+    ReUint64 capacity = initial.length > STRING_MIN_CAPACITY ? initial.length : STRING_MIN_CAPACITY;
 
-    u8 *data = (u8 *) memory_allocate (a, capacity + 1);
+    ReUint8 *data = (ReUint8 *) RE_Memory_Allocate (a, capacity + 1);
     if (!data)
     {
-        return 0;
+        return RE_False;
     }
 
-    memory_copy (data, initial.data, initial.length);
+    RE_Memory_Copy (data, initial.data, initial.length);
     data[initial.length] = 0;
 
     s->allocator = a;
@@ -27,74 +27,74 @@ string_create (string *s, memory_allocator *a, string_view initial)
     s->length    = initial.length;
     s->capacity  = capacity;
 
-    return 1;
+    return RE_True;
 }
 
 void
-string_destroy (string *s)
+RE_String_Destroy (ReString *s)
 {
-    memory_free (s->allocator, s->data);
+    RE_Memory_Free (s->allocator, s->data);
 
     s->data     = 0;
     s->length   = 0;
     s->capacity = 0;
 }
 
-static b8
-string_grow_to_fit (string *s, usize additionalLength)
+internal ReBool
+String_GrowToFit (ReString *s, ReUint64 additionalLength)
 {
-    if (additionalLength > ((usize) -1) - s->length)
+    if (additionalLength > ((ReUint64) -1) - s->length)
     {
         return 0; /* would overflow */
     }
 
-    usize newLength = s->length + additionalLength;
+    ReUint64 newLength = s->length + additionalLength;
     if (newLength <= s->capacity)
     {
-        return 1;
+        return RE_True;
     }
 
-    usize doubledCapacity = (s->capacity > ((usize) -1) / 2) ? (usize) -1 : s->capacity * 2;
-    usize newCapacity     = doubledCapacity > newLength ? doubledCapacity : newLength;
+    ReUint64 doubledCapacity = (s->capacity > ((ReUint64) -1) / 2) ? (ReUint64) -1 : s->capacity * 2;
+    ReUint64 newCapacity     = doubledCapacity > newLength ? doubledCapacity : newLength;
 
-    u8 *newData = (u8 *) memory_allocate (s->allocator, newCapacity + 1);
+    ReUint8 *newData = (ReUint8 *) RE_Memory_Allocate (s->allocator, newCapacity + 1);
     if (!newData)
     {
-        return 0;
+        return RE_False;
     }
 
-    memory_copy (newData, s->data, s->length);
-    memory_free (s->allocator, s->data);
+    RE_Memory_Copy (newData, s->data, s->length);
+    RE_Memory_Free (s->allocator, s->data);
 
     s->data     = newData;
     s->capacity = newCapacity;
 
-    return 1;
+    return RE_True;
 }
 
-b8
-string_append (string *s, string_view more)
+ReBool
+RE_String_Append (ReString *s, ReStringView more)
 {
-    if (!string_grow_to_fit (s, more.length))
+    if (!String_GrowToFit (s, more.length))
     {
-        return 0;
+        return RE_False;
     }
 
-    memory_copy (s->data + s->length, more.data, more.length);
+    RE_Memory_Copy (s->data + s->length, more.data, more.length);
     s->length += more.length;
     s->data[s->length] = 0;
 
-    return 1;
+    return RE_True;
 }
 
-b8
-string_append_cstr (string *s, const char *cstr)
+ReBool
+RE_String_AppendCStr (ReString *s, const char *cstr)
 {
-    return string_append (s, string_view_from_cstr (cstr));
+    return RE_String_Append (s, RE_StringView_FromCStr (cstr));
 }
 
 void
-string_clear (string *s)
+RE_String_Clear (ReString *s)
 {
     s->length = 0;
 
@@ -104,14 +104,14 @@ string_clear (string *s)
     }
 }
 
-string_view
-string_as_view (const string *s)
+ReStringView
+RE_String_AsView (const ReString *s)
 {
-    return string_view_from_bytes (s->data, s->length);
+    return RE_StringView_FromBytes (s->data, s->length);
 }
 
 const char *
-string_as_cstr (const string *s)
+RE_String_AsCStr (const ReString *s)
 {
     return (const char *) s->data;
 }

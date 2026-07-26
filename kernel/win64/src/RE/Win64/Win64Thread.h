@@ -5,7 +5,7 @@
 #pragma once
 
 /*
-    win64_thread.h
+    Win64Thread.h
 
     Raw OS thread primitives for the Windows platform. Currently just thread naming - the
     future job system's worker-thread spawner belongs here too.
@@ -18,7 +18,7 @@
  * convention (older tooling), unconditionally - they inform different debugger generations,
  * this isn't a fallback chain.
  */
-void win64_thread_set_thread_name (HANDLE thread, const wchar_t *name);
+void Win64_Thread_SetThreadName (HANDLE thread, const wchar_t *name);
 
-/* win64_thread_set_thread_name (GetCurrentThread (), name). */
-void win64_thread_set_current_thread_name (const wchar_t *name);
+/* Win64_Thread_SetThreadName (GetCurrentThread (), name). */
+void Win64_Thread_SetCurrentThreadName (const wchar_t *name);

@@ -2,16 +2,13 @@
  * Copyright (C) William Pimentel-Tonche
  */
 
-#ifndef foundation_memory_allocator_internal_h
-#define foundation_memory_allocator_internal_h
+#pragma once
 
 #include <RE/Foundation/FoundationPrimitiveTypes.h>
 
-struct memory_allocator
+struct ReAllocator
 {
     void *_context;
-    void *(*_alloc) (void *ctx, usize size, usize align);
+    void *(*_alloc) (void *ctx, ReUint64 size, ReUint64 align);
     void  (*_free)  (void *ctx, void *ptr);
 };
-
-#endif /* foundation_memory_allocator_internal_h */

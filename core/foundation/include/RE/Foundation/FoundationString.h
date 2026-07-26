@@ -10,33 +10,33 @@
 #include <RE/Foundation/FoundationStringView.h>
 
 /*
-    foundation_string.h
+    FoundationString.h
 
-    An owning, growable UTF-8 string backed by a caller-supplied memory_allocator - never
-    allocates from the OS itself. Unlike string_view, this maintains a trailing null terminator
-    as a zero-copy string_as_cstr() convenience for CRT/OS interop; capacity excludes that byte.
+    An owning, growable UTF-8 string backed by a caller-supplied ReAllocator - never
+    allocates from the OS itself. Unlike ReStringView, this maintains a trailing null terminator
+    as a zero-copy RE_String_AsCStr() convenience for CRT/OS interop; capacity excludes that byte.
 */
 
-typedef struct string
+typedef struct ReString
 {
-    memory_allocator *allocator;
-    u8    *data;
-    usize  length;   /* content length, excludes the trailing terminator byte */
-    usize  capacity; /* usable content capacity; the real allocation is capacity + 1 (to make space for the terminator) */
-} string;
+    ReAllocator *allocator;
+    ReUint8    *data;
+    ReUint64  length;   /* content length, excludes the trailing terminator byte */
+    ReUint64  capacity; /* usable content capacity; the real allocation is capacity + 1 (to make space for the terminator) */
+} ReString;
 
 /* Returns 0 only if the initial allocation itself fails. */
-b8   string_create  (string *s, memory_allocator *a, string_view initial);
-void string_destroy (string *s);
+ReBool   RE_String_Create  (ReString *s, ReAllocator *a, ReStringView initial);
+void RE_String_Destroy (ReString *s);
 
 /* Grow by doubling (per this project's own style guide). Returns 0 if growth was needed and the
  * allocator couldn't satisfy it - s is left unmodified in that case.
  */
-b8 string_append      (string *s, string_view more);
-b8 string_append_cstr (string *s, const char *cstr);
+ReBool RE_String_Append      (ReString *s, ReStringView more);
+ReBool RE_String_AppendCStr (ReString *s, const char *cstr);
 
-/* Sets length to 0, keeps the allocated capacity - cheap reuse, mirrors arena_reset(). */
-void string_clear (string *s);
+/* Sets length to 0, keeps the allocated capacity - cheap reuse, mirrors RE_Arena_Reset(). */
+void RE_String_Clear (ReString *s);
 
-string_view string_as_view (const string *s);
-const char *string_as_cstr (const string *s);
+ReStringView RE_String_AsView (const ReString *s);
+const char *RE_String_AsCStr (const ReString *s);

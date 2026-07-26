@@ -12,7 +12,7 @@
     event in the order it happened instead of only "what's true this frame."
 
     This header has no platform knowledge whatsoever. Keys are identified by a platform-independent
-    physical-key enum (input_key), not a virtual-key code or scan code - the platform kernel is
+    physical-key enum (ReInputKey), not a virtual-key code or scan code - the platform kernel is
     responsible for translating whatever its native input APIs give it into these events.
 
     The queue itself is a fixed-capacity array, not a growable/allocated container - the platform kernel
@@ -21,188 +21,188 @@
 
 #include <RE/Foundation/FoundationPrimitiveTypes.h>
 
-typedef enum input_event_kind
+typedef enum ReInputEventKind
 {
-    INPUT_EVENT_KEY,
-    INPUT_EVENT_MOUSE_MOVE,
-    INPUT_EVENT_MOUSE_BUTTON,
-    INPUT_EVENT_MOUSE_WHEEL,
-    INPUT_EVENT_GAMEPAD_BUTTON,
-    INPUT_EVENT_GAMEPAD_AXIS,
-    INPUT_EVENT_GAMEPAD_CONNECTION,
-} input_event_kind;
+    ReInputEventKind_Key,
+    ReInputEventKind_MouseMove,
+    ReInputEventKind_MouseButton,
+    ReInputEventKind_MouseWheel,
+    ReInputEventKind_GamepadButton,
+    ReInputEventKind_GamepadAxis,
+    ReInputEventKind_GamepadConnection,
+} ReInputEventKind;
 
 /* Physical key identity (scan-code-based on platforms where that distinction exists), not a
  * layout-dependent virtual key - WASD should mean the same physical keys on any keyboard layout.
  */
-typedef enum input_key
+typedef enum ReInputKey
 {
-    INPUT_KEY_UNKNOWN = 0,
+    ReInputKey_Unknown = 0,
 
-    INPUT_KEY_A, INPUT_KEY_B, INPUT_KEY_C, INPUT_KEY_D, INPUT_KEY_E, INPUT_KEY_F,
-    INPUT_KEY_G, INPUT_KEY_H, INPUT_KEY_I, INPUT_KEY_J, INPUT_KEY_K, INPUT_KEY_L,
-    INPUT_KEY_M, INPUT_KEY_N, INPUT_KEY_O, INPUT_KEY_P, INPUT_KEY_Q, INPUT_KEY_R,
-    INPUT_KEY_S, INPUT_KEY_T, INPUT_KEY_U, INPUT_KEY_V, INPUT_KEY_W, INPUT_KEY_X,
-    INPUT_KEY_Y, INPUT_KEY_Z,
+    ReInputKey_A, ReInputKey_B, ReInputKey_C, ReInputKey_D, ReInputKey_E, ReInputKey_F,
+    ReInputKey_G, ReInputKey_H, ReInputKey_I, ReInputKey_J, ReInputKey_K, ReInputKey_L,
+    ReInputKey_M, ReInputKey_N, ReInputKey_O, ReInputKey_P, ReInputKey_Q, ReInputKey_R,
+    ReInputKey_S, ReInputKey_T, ReInputKey_U, ReInputKey_V, ReInputKey_W, ReInputKey_X,
+    ReInputKey_Y, ReInputKey_Z,
 
-    INPUT_KEY_0, INPUT_KEY_1, INPUT_KEY_2, INPUT_KEY_3, INPUT_KEY_4,
-    INPUT_KEY_5, INPUT_KEY_6, INPUT_KEY_7, INPUT_KEY_8, INPUT_KEY_9,
+    ReInputKey_0, ReInputKey_1, ReInputKey_2, ReInputKey_3, ReInputKey_4,
+    ReInputKey_5, ReInputKey_6, ReInputKey_7, ReInputKey_8, ReInputKey_9,
 
-    INPUT_KEY_F1, INPUT_KEY_F2, INPUT_KEY_F3, INPUT_KEY_F4, INPUT_KEY_F5, INPUT_KEY_F6,
-    INPUT_KEY_F7, INPUT_KEY_F8, INPUT_KEY_F9, INPUT_KEY_F10, INPUT_KEY_F11, INPUT_KEY_F12,
+    ReInputKey_F1, ReInputKey_F2, ReInputKey_F3, ReInputKey_F4, ReInputKey_F5, ReInputKey_F6,
+    ReInputKey_F7, ReInputKey_F8, ReInputKey_F9, ReInputKey_F10, ReInputKey_F11, ReInputKey_F12,
 
-    INPUT_KEY_ESCAPE, INPUT_KEY_TAB, INPUT_KEY_CAPS_LOCK, INPUT_KEY_ENTER, INPUT_KEY_BACKSPACE,
-    INPUT_KEY_SPACE,
+    ReInputKey_Escape, ReInputKey_Tab, ReInputKey_CapsLock, ReInputKey_Enter, ReInputKey_Backspace,
+    ReInputKey_Space,
 
-    INPUT_KEY_LEFT_SHIFT, INPUT_KEY_RIGHT_SHIFT,
-    INPUT_KEY_LEFT_CONTROL, INPUT_KEY_RIGHT_CONTROL,
-    INPUT_KEY_LEFT_ALT, INPUT_KEY_RIGHT_ALT,
-    INPUT_KEY_LEFT_SUPER, INPUT_KEY_RIGHT_SUPER,
+    ReInputKey_LeftShift, ReInputKey_RightShift,
+    ReInputKey_LeftControl, ReInputKey_RightControl,
+    ReInputKey_LeftAlt, ReInputKey_RightAlt,
+    ReInputKey_LeftSuper, ReInputKey_RightSuper,
 
-    INPUT_KEY_ARROW_UP, INPUT_KEY_ARROW_DOWN, INPUT_KEY_ARROW_LEFT, INPUT_KEY_ARROW_RIGHT,
+    ReInputKey_ArrowUp, ReInputKey_ArrowDown, ReInputKey_ArrowLeft, ReInputKey_ArrowRight,
 
-    INPUT_KEY_INSERT, INPUT_KEY_DELETE, INPUT_KEY_HOME, INPUT_KEY_END,
-    INPUT_KEY_PAGE_UP, INPUT_KEY_PAGE_DOWN,
+    ReInputKey_Insert, ReInputKey_Delete, ReInputKey_Home, ReInputKey_End,
+    ReInputKey_PageUp, ReInputKey_PageDown,
 
-    INPUT_KEY_MINUS, INPUT_KEY_EQUALS, INPUT_KEY_LEFT_BRACKET, INPUT_KEY_RIGHT_BRACKET,
-    INPUT_KEY_SEMICOLON, INPUT_KEY_APOSTROPHE, INPUT_KEY_GRAVE, INPUT_KEY_BACKSLASH,
-    INPUT_KEY_COMMA, INPUT_KEY_PERIOD, INPUT_KEY_SLASH,
+    ReInputKey_Minus, ReInputKey_Equals, ReInputKey_LeftBracket, ReInputKey_RightBracket,
+    ReInputKey_Semicolon, ReInputKey_Apostrophe, ReInputKey_Grave, ReInputKey_Backslash,
+    ReInputKey_Comma, ReInputKey_Period, ReInputKey_Slash,
 
-    INPUT_KEY_COUNT,
-} input_key;
+    ReInputKey_Count,
+} ReInputKey;
 
-typedef enum input_mouse_button
+typedef enum ReInputMouseButton
 {
-    INPUT_MOUSE_BUTTON_LEFT,
-    INPUT_MOUSE_BUTTON_RIGHT,
-    INPUT_MOUSE_BUTTON_MIDDLE,
-    INPUT_MOUSE_BUTTON_X1,
-    INPUT_MOUSE_BUTTON_X2,
+    ReInputMouseButton_Left,
+    ReInputMouseButton_Right,
+    ReInputMouseButton_Middle,
+    ReInputMouseButton_X1,
+    ReInputMouseButton_X2,
 
-    INPUT_MOUSE_BUTTON_COUNT,
-} input_mouse_button;
+    ReInputMouseButton_Count,
+} ReInputMouseButton;
 
-typedef struct input_event_key
+typedef struct ReInputEventKey
 {
-    input_key key;
-    b8        isDown   : 1;
-    b8        isRepeat : 1;
-} input_event_key;
+    ReInputKey key;
+    ReBool        isDown   : 1;
+    ReBool        isRepeat : 1;
+} ReInputEventKey;
 
-typedef struct input_event_mouse_move
+typedef struct ReInputEventMouseMove
 {
     /* Client-area position, not a delta - true unclamped look/aim deltas need raw input,
      * which this first pass doesn't cover yet.
      */
-    s32 x;
-    s32 y;
-} input_event_mouse_move;
+    ReSint32 x;
+    ReSint32 y;
+} ReInputEventMouseMove;
 
-typedef struct input_event_mouse_button
+typedef struct ReInputEventMouseButton
 {
-    input_mouse_button button;
-    b8                 isDown : 1;
-} input_event_mouse_button;
+    ReInputMouseButton button;
+    ReBool                 isDown : 1;
+} ReInputEventMouseButton;
 
-typedef struct input_event_mouse_wheel
+typedef struct ReInputEventMouseWheel
 {
-    s32 delta;
-} input_event_mouse_wheel;
+    ReSint32 delta;
+} ReInputEventMouseWheel;
 
-/* Up to INPUT_GAMEPAD_COUNT local controllers - matches typical console local-multiplayer limits,
+/* Up to RE_INPUT_GAMEPAD_COUNT local controllers - matches typical console local-multiplayer limits,
  * not anything specific to one platform's controller API.
  */
-#define INPUT_GAMEPAD_COUNT 4
+#define RE_INPUT_GAMEPAD_COUNT 4
 
-typedef enum input_gamepad_button
+typedef enum ReInputGamepadButton
 {
-    INPUT_GAMEPAD_BUTTON_DPAD_UP,
-    INPUT_GAMEPAD_BUTTON_DPAD_DOWN,
-    INPUT_GAMEPAD_BUTTON_DPAD_LEFT,
-    INPUT_GAMEPAD_BUTTON_DPAD_RIGHT,
-    INPUT_GAMEPAD_BUTTON_START,
-    INPUT_GAMEPAD_BUTTON_BACK,
-    INPUT_GAMEPAD_BUTTON_LEFT_THUMB,
-    INPUT_GAMEPAD_BUTTON_RIGHT_THUMB,
-    INPUT_GAMEPAD_BUTTON_LEFT_SHOULDER,
-    INPUT_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+    ReInputGamepadButton_DpadUp,
+    ReInputGamepadButton_DpadDown,
+    ReInputGamepadButton_DpadLeft,
+    ReInputGamepadButton_DpadRight,
+    ReInputGamepadButton_Start,
+    ReInputGamepadButton_Back,
+    ReInputGamepadButton_LeftThumb,
+    ReInputGamepadButton_RightThumb,
+    ReInputGamepadButton_LeftShoulder,
+    ReInputGamepadButton_RightShoulder,
 
     /* Named by physical position on the face-button diamond, not by an Xbox-specific "A/B/X/Y"
      * label - the same physical position is a different letter/symbol on a PlayStation or
      * Switch pad, so positional naming is the one that's actually platform-independent.
      */
-    INPUT_GAMEPAD_BUTTON_SOUTH,
-    INPUT_GAMEPAD_BUTTON_EAST,
-    INPUT_GAMEPAD_BUTTON_WEST,
-    INPUT_GAMEPAD_BUTTON_NORTH,
+    ReInputGamepadButton_South,
+    ReInputGamepadButton_East,
+    ReInputGamepadButton_West,
+    ReInputGamepadButton_North,
 
-    INPUT_GAMEPAD_BUTTON_COUNT,
-} input_gamepad_button;
+    ReInputGamepadButton_Count,
+} ReInputGamepadButton;
 
-typedef enum input_gamepad_axis
+typedef enum ReInputGamepadAxis
 {
-    INPUT_GAMEPAD_AXIS_LEFT_STICK_X,
-    INPUT_GAMEPAD_AXIS_LEFT_STICK_Y,
-    INPUT_GAMEPAD_AXIS_RIGHT_STICK_X,
-    INPUT_GAMEPAD_AXIS_RIGHT_STICK_Y,
-    INPUT_GAMEPAD_AXIS_LEFT_TRIGGER,
-    INPUT_GAMEPAD_AXIS_RIGHT_TRIGGER,
+    ReInputGamepadAxis_LeftStickX,
+    ReInputGamepadAxis_LeftStickY,
+    ReInputGamepadAxis_RightStickX,
+    ReInputGamepadAxis_RightStickY,
+    ReInputGamepadAxis_LeftTrigger,
+    ReInputGamepadAxis_RightTrigger,
 
-    INPUT_GAMEPAD_AXIS_COUNT,
-} input_gamepad_axis;
+    ReInputGamepadAxis_Count,
+} ReInputGamepadAxis;
 
-typedef struct input_event_gamepad_button
+typedef struct ReInputEventGamepadButton
 {
-    u8                    gamepadIndex;
-    input_gamepad_button  button;
-    b8                    isDown : 1;
-} input_event_gamepad_button;
+    ReUint8                    gamepadIndex;
+    ReInputGamepadButton  button;
+    ReBool                    isDown : 1;
+} ReInputEventGamepadButton;
 
-typedef struct input_event_gamepad_axis
+typedef struct ReInputEventGamepadAxis
 {
-    u8                  gamepadIndex;
-    input_gamepad_axis  axis;
+    ReUint8                  gamepadIndex;
+    ReInputGamepadAxis  axis;
 
     /* Normalized and deadzone-filtered by the platform kernel: [-1, 1] for sticks, [0, 1] for
      * triggers. Never the platform's raw integer range - that's exactly the kind of platform
      * knowledge this service exists to hide.
      */
-    f32 value;
-} input_event_gamepad_axis;
+    ReFloat32 value;
+} ReInputEventGamepadAxis;
 
-typedef struct input_event_gamepad_connection
+typedef struct ReInputEventGamepadConnection
 {
-    u8 gamepadIndex;
-    b8 isConnected : 1;
-} input_event_gamepad_connection;
+    ReUint8 gamepadIndex;
+    ReBool isConnected : 1;
+} ReInputEventGamepadConnection;
 
-typedef struct input_event
+typedef struct ReInputEvent
 {
-    input_event_kind kind;
+    ReInputEventKind kind;
 
     union
     {
-        input_event_key                 key;
-        input_event_mouse_move          mouseMove;
-        input_event_mouse_button        mouseButton;
-        input_event_mouse_wheel         mouseWheel;
-        input_event_gamepad_button      gamepadButton;
-        input_event_gamepad_axis        gamepadAxis;
-        input_event_gamepad_connection  gamepadConnection;
+        ReInputEventKey                 key;
+        ReInputEventMouseMove          mouseMove;
+        ReInputEventMouseButton        mouseButton;
+        ReInputEventMouseWheel         mouseWheel;
+        ReInputEventGamepadButton      gamepadButton;
+        ReInputEventGamepadAxis        gamepadAxis;
+        ReInputEventGamepadConnection  gamepadConnection;
     };
-} input_event;
+} ReInputEvent;
 
-#define INPUT_QUEUE_CAPACITY 256
+#define RE_INPUT_QUEUE_CAPACITY 256
 
-typedef struct input_queue
+typedef struct ReInputQueue
 {
-    input_event events[INPUT_QUEUE_CAPACITY];
-    u32         count;
-} input_queue;
+    ReInputEvent events[RE_INPUT_QUEUE_CAPACITY];
+    ReUint32         count;
+} ReInputQueue;
 
-/* No-ops if the queue is already at INPUT_QUEUE_CAPACITY - dropping an event silently is a
+/* No-ops if the queue is already at RE_INPUT_QUEUE_CAPACITY - dropping an event silently is a
  * safer default than crashing on an input burst under real play, but the capacity is generous
  * enough that this should never actually happen from legitimate input in a single tick.
  */
-void input_queue_push (input_queue *queue, input_event event);
-void input_queue_clear (input_queue *queue);
+void RE_Input_PushEvent (ReInputQueue *queue, ReInputEvent event);
+void RE_Input_ClearQueue (ReInputQueue *queue);

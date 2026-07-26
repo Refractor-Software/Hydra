@@ -19,18 +19,18 @@
 
 /* Real memory-region layout (permanent/transient/etc split, if any) is intentionally undecided -
  * see the platform/engine boundary plan. One flat reserved+committed block is enough to prove the
- * app_context wiring works; this is a placeholder size, not a budget.
+ * ReAppContext wiring works; this is a placeholder size, not a budget.
  */
 #define WIN64_APP_MEMORY_SIZE (64ull * 1024 * 1024)
 
 /* Small enough to keep inline for now - split into its own win64/time module if it grows beyond
  * a plain QueryPerformanceCounter delta.
  */
-static s64 gWin64PerfFrequency;
-static s64 gWin64PerfCounterLast;
+global ReSint64 gWin64PerfFrequency;
+global ReSint64 gWin64PerfCounterLast;
 
-static void
-win64_time_init (void)
+internal void
+Win64_Time_Init (void)
 {
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency (&frequency);
@@ -41,22 +41,22 @@ win64_time_init (void)
     gWin64PerfCounterLast = counter.QuadPart;
 }
 
-static f32
-win64_time_tick (void)
+internal ReFloat32
+Win64_Time_Tick (void)
 {
     LARGE_INTEGER counter;
     QueryPerformanceCounter (&counter);
 
-    f32 deltaTime = (f32) (counter.QuadPart - gWin64PerfCounterLast) / (f32) gWin64PerfFrequency;
+    ReFloat32 deltaTime = (ReFloat32) (counter.QuadPart - gWin64PerfCounterLast) / (ReFloat32) gWin64PerfFrequency;
     gWin64PerfCounterLast = counter.QuadPart;
 
     return deltaTime;
 }
 
-static LRESULT CALLBACK
-win64_window_proc (HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+internal LRESULT CALLBACK
+Win64_WindowProc (HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    win64_input_handle_message (message, wParam, lParam);
+    Win64_Input_HandleMessage (message, wParam, lParam);
 
     switch (message)
     {
@@ -69,11 +69,11 @@ win64_window_proc (HWND window, UINT message, WPARAM wParam, LPARAM lParam)
             return 0;
 
         case WM_KILLFOCUS:
-            win64_input_release_all_held_keys ();
+            Win64_Input_ReleaseAllHeldKeys ();
             return 0;
 
         case WM_SIZE:
-            win64_render_notify_resize (LOWORD (lParam), HIWORD (lParam));
+            Win64_Render_NotifyResize (LOWORD (lParam), HIWORD (lParam));
             return 0;
 
         default:
@@ -84,10 +84,10 @@ win64_window_proc (HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 /* TEMPORARY: makes the input queue's per-tick event count visible without a real debug-output
  * path yet. Remove once one exists.
  */
-static void
-win64_debug_update_window_title (HWND window, f32 deltaTime)
+internal void
+Win64_Debug_UpdateWindowTitle (HWND window, ReFloat32 deltaTime)
 {
-    input_queue *queue = win64_input_queue_get ();
+    ReInputQueue *queue = Win64_Input_GetQueue ();
 
     /* wsprintfW deliberately has no floating-point support, so the CRT's swprintf_s is used here
      * instead - purely a kernel debug-output concern, unrelated to the engine's CRT policy.
@@ -98,14 +98,14 @@ win64_debug_update_window_title (HWND window, f32 deltaTime)
     SetWindowTextW (window, title);
 }
 
-static HWND
-win64_window_create (HINSTANCE instance)
+internal HWND
+Win64_CreateWindow (HINSTANCE instance)
 {
     WNDCLASSEXW windowClass = {0};
 
     windowClass.cbSize        = sizeof (windowClass);
     windowClass.style         = CS_HREDRAW | CS_VREDRAW;
-    windowClass.lpfnWndProc   = win64_window_proc;
+    windowClass.lpfnWndProc   = Win64_WindowProc;
     windowClass.hInstance     = instance;
     windowClass.hCursor       = LoadCursorW (NULL, IDC_ARROW);
     windowClass.lpszClassName = L"HydraWindowClass";
@@ -136,32 +136,32 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
     /* Must run before anything else - no log/crash infrastructure exists yet to report a
      * problem through, so this shows its own MessageBoxW on failure.
      */
-    if (!win64_startup_check_cpu_features ())
+    if (!Win64_Startup_CheckCpuFeatures ())
     {
         return 1;
     }
 
-    win64_log_init ();
-    win64_crash_init ();
-    win64_command_line_init ();
+    Win64_Log_Init ();
+    Win64_Crash_Init ();
+    Win64_CommandLine_Init ();
 
-    b8  running  = TRUE;
+    ReBool  running  = RE_True;
     int exitCode = 0;
 
     __try
     {
-        win64_startup_init_com ();
-        win64_startup_set_dpi_awareness ();
-        win64_thread_set_current_thread_name (L"MainThread");
+        Win64_Startup_InitCom ();
+        Win64_Startup_SetDpiAwareness ();
+        Win64_Thread_SetCurrentThreadName (L"MainThread");
 
-        HWND window = win64_window_create (instance);
+        HWND window = Win64_CreateWindow (instance);
         if (!window)
         {
             exitCode = 1;
             __leave;
         }
 
-        if (!win64_render_init (window))
+        if (!Win64_Render_Init (window))
         {
             DestroyWindow (window);
             exitCode = 1;
@@ -174,41 +174,41 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
         void *appMemory = VirtualAlloc (NULL, WIN64_APP_MEMORY_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
         if (!appMemory)
         {
-            win64_render_shutdown ();
+            Win64_Render_Shutdown ();
             DestroyWindow (window);
             exitCode = 1;
             __leave;
         }
 
-        app_context context = {0};
+        ReAppContext context = {0};
         context.memory      = appMemory;
         context.memorySize  = WIN64_APP_MEMORY_SIZE;
-        context.input       = win64_input_queue_get ();
-        context.argCount    = win64_command_line_get_arg_count ();
-        context.args        = win64_command_line_get_args ();
+        context.input       = Win64_Input_GetQueue ();
+        context.argCount    = Win64_CommandLine_GetArgCount ();
+        context.args        = Win64_CommandLine_GetArgs ();
 
-        if (!application_init (&context))
+        if (!RE_Application_Init (&context))
         {
             VirtualFree (appMemory, 0, MEM_RELEASE);
-            win64_render_shutdown ();
+            Win64_Render_Shutdown ();
             DestroyWindow (window);
             exitCode = 1;
             __leave;
         }
 
-        win64_startup_configure_timing ();
-        win64_time_init ();
+        Win64_Startup_ConfigureTiming ();
+        Win64_Time_Init ();
 
         while (running)
         {
-            win64_input_reset ();
+            Win64_Input_Reset ();
 
             MSG message;
             while (PeekMessageW (&message, NULL, 0, 0, PM_REMOVE))
             {
                 if (message.message == WM_QUIT)
                 {
-                    running  = FALSE;
+                    running  = RE_False;
                     exitCode = (int) message.wParam;
                     break;
                 }
@@ -222,34 +222,34 @@ wWinMain (HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
                 break;
             }
 
-            win64_render_process_resize ();
+            Win64_Render_ProcessResize ();
 
             /* XInput has no message-based notification, so it's polled explicitly once per tick
-             * rather than being fed from win64_window_proc like keyboard/mouse are.
+             * rather than being fed from Win64_WindowProc like keyboard/mouse are.
              */
-            win64_gamepad_poll (win64_input_queue_get ());
+            Win64_Gamepad_Poll (Win64_Input_GetQueue ());
 
-            f32 deltaTime = win64_time_tick ();
+            ReFloat32 deltaTime = Win64_Time_Tick ();
 
-            application_tick (&context, deltaTime);
+            RE_Application_Tick (&context, deltaTime);
 
-            win64_render_draw ();
+            Win64_Render_Draw ();
 
-            win64_debug_update_window_title (window, deltaTime);
+            Win64_Debug_UpdateWindowTitle (window, deltaTime);
         }
 
-        application_shutdown (&context);
-        win64_render_shutdown ();
+        RE_Application_Shutdown (&context);
+        Win64_Render_Shutdown ();
         VirtualFree (appMemory, 0, MEM_RELEASE);
-        win64_startup_shutdown_timing ();
+        Win64_Startup_ShutdownTiming ();
     }
-    __except (win64_crash_exception_filter (GetExceptionInformation ()))
+    __except (Win64_Crash_ExceptionFilter (GetExceptionInformation ()))
     {
         exitCode = 1;
     }
 
-    win64_startup_shutdown_com ();
-    win64_log_shutdown ();
+    Win64_Startup_ShutdownCom ();
+    Win64_Log_Shutdown ();
 
     return exitCode;
 }

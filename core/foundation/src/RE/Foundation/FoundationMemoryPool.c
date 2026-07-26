@@ -9,29 +9,29 @@
 #include <RE/Foundation/FoundationMemory.h>
 
 void
-pool_init (pool *p, void *memory, usize memorySize, usize blockSize, usize blockAlignment)
+RE_Pool_Init (RePool *p, void *memory, ReUint64 memorySize, ReUint64 blockSize, ReUint64 blockAlignment)
 {
     assert (blockAlignment != 0 && (blockAlignment & (blockAlignment - 1)) == 0);
 
-    uptr rawBase     = (uptr) memory;
-    uptr alignedBase = (uptr) memory_align_up ((usize) rawBase, blockAlignment);
-    usize lostBytes  = (usize) (alignedBase - rawBase);
+    ReUint64 rawBase     = (ReUint64) memory;
+    ReUint64 alignedBase = (ReUint64) RE_Memory_AlignUp ((ReUint64) rawBase, blockAlignment);
+    ReUint64 lostBytes  = (ReUint64) (alignedBase - rawBase);
 
-    usize blockStride = blockSize > sizeof (void *) ? blockSize : sizeof (void *);
-    blockStride        = memory_align_up (blockStride, blockAlignment);
+    ReUint64 blockStride = blockSize > sizeof (void *) ? blockSize : sizeof (void *);
+    blockStride        = RE_Memory_AlignUp (blockStride, blockAlignment);
 
     assert (memorySize > lostBytes);
-    usize usableSize = memorySize - lostBytes;
+    ReUint64 usableSize = memorySize - lostBytes;
 
-    usize blockCount = usableSize / blockStride;
+    ReUint64 blockCount = usableSize / blockStride;
     assert (blockCount > 0);
 
     p->base        = (void *) alignedBase;
     p->blockStride = blockStride;
     p->blockCount  = blockCount;
 
-    u8 *cursor = (u8 *) p->base;
-    for (usize i = 0; i < blockCount; i += 1)
+    ReUint8 *cursor = (ReUint8 *) p->base;
+    for (ReUint64 i = 0; i < blockCount; i += 1)
     {
         void *next = (i + 1 < blockCount) ? (void *) (cursor + blockStride) : 0;
         *(void **) cursor = next;
@@ -42,7 +42,7 @@ pool_init (pool *p, void *memory, usize memorySize, usize blockSize, usize block
 }
 
 void *
-pool_alloc (pool *p)
+RE_Pool_Alloc (RePool *p)
 {
     if (!p->freeList)
     {
@@ -56,11 +56,11 @@ pool_alloc (pool *p)
 }
 
 void
-pool_free (pool *p, void *ptr)
+RE_Pool_Free (RePool *p, void *ptr)
 {
-    uptr base = (uptr) p->base;
-    uptr addr = (uptr) ptr;
-    uptr end  = base + (uptr) (p->blockStride * p->blockCount);
+    ReUint64 base = (ReUint64) p->base;
+    ReUint64 addr = (ReUint64) ptr;
+    ReUint64 end  = base + (ReUint64) (p->blockStride * p->blockCount);
 
     assert (addr >= base && addr < end && (addr - base) % p->blockStride == 0);
 
@@ -68,32 +68,32 @@ pool_free (pool *p, void *ptr)
     p->freeList    = ptr;
 }
 
-static void *
-pool_allocator_alloc (void *ctx, usize size)
+internal void *
+Pool_AllocatorAlloc (void *ctx, ReUint64 size)
 {
-    pool *p = (pool *) ctx;
+    RePool *p = (RePool *) ctx;
 
     if (size > p->blockStride)
     {
         return 0;
     }
 
-    return pool_alloc (p);
+    return RE_Pool_Alloc (p);
 }
 
-static void
-pool_allocator_free (void *ctx, void *ptr)
+internal void
+Pool_AllocatorFree (void *ctx, void *ptr)
 {
-    pool_free ((pool *) ctx, ptr);
+    RE_Pool_Free ((RePool *) ctx, ptr);
 }
 
-memory_allocator
-pool_as_allocator (pool *p)
+ReAllocator
+RE_Pool_AsAllocator (RePool *p)
 {
-    memory_allocator allocator;
+    ReAllocator allocator;
     allocator._context = p;
-    allocator._alloc   = pool_allocator_alloc;
-    allocator._free    = pool_allocator_free;
+    allocator._alloc   = Pool_AllocatorAlloc;
+    allocator._free    = Pool_AllocatorFree;
 
     return allocator;
 }

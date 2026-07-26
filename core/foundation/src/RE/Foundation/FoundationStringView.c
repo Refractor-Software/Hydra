@@ -9,49 +9,49 @@
 
 #include <RE/Foundation/FoundationMemory.h>
 
-string_view
-string_view_from_cstr (const char *cstr)
+ReStringView
+RE_StringView_FromCStr (const char *cstr)
 {
-    string_view sv;
-    sv.data   = (const u8 *) cstr;
+    ReStringView sv;
+    sv.data   = (const ReUint8 *) cstr;
     sv.length = strlen (cstr);
 
     return sv;
 }
 
-string_view
-string_view_from_bytes (const u8 *data, usize length)
+ReStringView
+RE_StringView_FromBytes (const ReUint8 *data, ReUint64 length)
 {
-    string_view sv;
+    ReStringView sv;
     sv.data   = data;
     sv.length = length;
 
     return sv;
 }
 
-b8
-string_view_is_empty (string_view sv)
+ReBool
+RE_StringView_IsEmpty (ReStringView sv)
 {
-    return (b8) (sv.length == 0);
+    return (ReBool) (sv.length == 0);
 }
 
-b8
-string_view_equals (string_view a, string_view b)
+ReBool
+RE_StringView_Equals (ReStringView a, ReStringView b)
 {
     if (a.length != b.length)
     {
-        return 0;
+        return RE_False;
     }
 
-    return (b8) (memory_compare (a.data, b.data, a.length) == 0);
+    return (ReBool) (RE_Memory_Compare (a.data, b.data, a.length) == 0);
 }
 
-s32
-string_view_compare (string_view a, string_view b)
+ReSint32
+RE_StringView_Compare (ReStringView a, ReStringView b)
 {
-    usize minLength = a.length < b.length ? a.length : b.length;
+    ReUint64 minLength = a.length < b.length ? a.length : b.length;
 
-    s32 result = memory_compare (a.data, b.data, minLength);
+    ReSint32 result = RE_Memory_Compare (a.data, b.data, minLength);
     if (result != 0)
     {
         return result;
@@ -63,68 +63,68 @@ string_view_compare (string_view a, string_view b)
     return 0;
 }
 
-b8
-string_view_starts_with (string_view sv, string_view prefix)
+ReBool
+RE_StringView_StartsWith (ReStringView sv, ReStringView prefix)
 {
     if (prefix.length > sv.length)
     {
-        return 0;
+        return RE_False;
     }
 
-    return (b8) (memory_compare (sv.data, prefix.data, prefix.length) == 0);
+    return (ReBool) (RE_Memory_Compare (sv.data, prefix.data, prefix.length) == 0);
 }
 
-b8
-string_view_ends_with (string_view sv, string_view suffix)
+ReBool
+RE_StringView_EndsWith (ReStringView sv, ReStringView suffix)
 {
     if (suffix.length > sv.length)
     {
-        return 0;
+        return RE_False;
     }
 
-    return (b8) (memory_compare (sv.data + (sv.length - suffix.length), suffix.data, suffix.length) == 0);
+    return (ReBool) (RE_Memory_Compare (sv.data + (sv.length - suffix.length), suffix.data, suffix.length) == 0);
 }
 
-string_view
-string_view_substring (string_view sv, usize start, usize length)
+ReStringView
+RE_StringView_Substring (ReStringView sv, ReUint64 start, ReUint64 length)
 {
     assert (start <= sv.length && length <= sv.length - start);
 
-    return string_view_from_bytes (sv.data + start, length);
+    return RE_StringView_FromBytes (sv.data + start, length);
 }
 
-b8
-string_view_find_byte (string_view sv, u8 byte, usize *outIndex)
+ReBool
+RE_StringView_FindByte (ReStringView sv, ReUint8 byte, ReUint64 *outIndex)
 {
-    for (usize i = 0; i < sv.length; i += 1)
+    for (ReUint64 i = 0; i < sv.length; i += 1)
     {
         if (sv.data[i] == byte)
         {
             *outIndex = i;
-            return 1;
+            return RE_True;
         }
     }
 
-    return 0;
+    return RE_False;
 }
 
-b8
-string_view_find (string_view sv, string_view needle, usize *outIndex)
+ReBool
+RE_StringView_Find (ReStringView sv, ReStringView needle, ReUint64 *outIndex)
 {
     if (needle.length == 0 || needle.length > sv.length)
     {
-        return 0;
+        return RE_False;
     }
 
-    usize lastStart = sv.length - needle.length;
-    for (usize i = 0; i <= lastStart; i += 1)
+    ReUint64 lastStart = sv.length - needle.length;
+    for (ReUint64 i = 0; i <= lastStart; i += 1)
     {
-        if (memory_compare (sv.data + i, needle.data, needle.length) == 0)
+        if (RE_Memory_Compare (sv.data + i, needle.data, needle.length) == 0)
         {
             *outIndex = i;
-            return 1;
+            return RE_True;
         }
     }
 
-    return 0;
+    return RE_False;
 }

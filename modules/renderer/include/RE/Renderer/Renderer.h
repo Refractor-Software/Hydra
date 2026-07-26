@@ -1,3 +1,3 @@
 /*
-	renderer.h
+	Renderer.h
 */

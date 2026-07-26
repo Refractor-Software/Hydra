@@ -5,10 +5,10 @@
 #pragma once
 
 /*
-    win64_log.h
+    Win64Log.h
 
-    Console/debug-output backend for the "log" service - defines log_write_raw (declared in
-    log/log.h). This is the only place in the whole project that knows a console or
+    Console/debug-output backend for the "log" service - defines RE_Log_WriteRaw (declared in
+    RE/Log/Log.h). This is the only place in the whole project that knows a console or
     OutputDebugString even exist for logging purposes.
 */
 
@@ -19,9 +19,9 @@
 /* Attaches to a parent console if launched from one, otherwise allocates a new one. Enables
  * VT100 color codes. Call once, before anything logs.
  */
-void win64_log_init (void);
+void Win64_Log_Init (void);
 
 /* Releases the console (if one was allocated/attached). Call once, after everything is done
  * logging.
  */
-void win64_log_shutdown (void);
+void Win64_Log_Shutdown (void);

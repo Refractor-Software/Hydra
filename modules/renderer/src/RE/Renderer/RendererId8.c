@@ -1,5 +1,5 @@
 /*
-	renderer_id8.c
+	RendererId8.c
 
 	Implements raytraced indirect lighting similar to id Tech 8 ("SIGGRAPH 2025 Advances in Real-Time Rendering in Games: Fast as Hell: idTech8 Global Illumination") and RE ENGINE ("RE:2023 Advances in Ray Tracing").
 

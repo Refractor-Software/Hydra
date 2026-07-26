@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 void
-log_write (log_level level, const char *format, ...)
+RE_Log_Write (ReLogLevel level, const char *format, ...)
 {
     char buffer[1024];
 
@@ -17,5 +17,5 @@ log_write (log_level level, const char *format, ...)
     vsnprintf (buffer, sizeof (buffer), format, args);
     va_end (args);
 
-    log_write_raw (level, buffer);
+    RE_Log_WriteRaw (level, buffer);
 }

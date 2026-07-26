@@ -5,9 +5,9 @@
 #pragma once
 
 /*
-    win64_commandline.h
+    Win64CommandLine.h
 
-    Parses the real process command line into UTF-8 string_views, backed by process-lifetime
+    Parses the real process command line into UTF-8 ReStringViews, backed by process-lifetime
     kernel-static storage. This is the only place in the whole project that knows
     CommandLineToArgvW, GetCommandLineW, or wide-to-UTF-8 command-line conversion exist.
 
@@ -21,7 +21,7 @@
 #include <RE/Foundation/FoundationStringView.h>
 
 /* Call once, early in wWinMain, after log/crash init. */
-void win64_command_line_init (void);
+void Win64_CommandLine_Init (void);
 
-s32          win64_command_line_get_arg_count (void);
-string_view *win64_command_line_get_args      (void);
+ReSint32          Win64_CommandLine_GetArgCount (void);
+ReStringView *Win64_CommandLine_GetArgs      (void);

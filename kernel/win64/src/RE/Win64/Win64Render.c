@@ -12,53 +12,53 @@
 #include <RE/Log/Log.h>
 
 /*
-    win64_render.c
+    Win64Render.c
 
     Kernel-only D3D12 bring-up: device/swapchain/command-queue/fence plumbing and a clear-color
     present loop, with zero engine involvement. What (if anything) crosses an engine/kernel render
     boundary is a separate, later design pass - this only proves the platform-side pipeline works.
 
     Single-instance module (one window, one device, for the process's lifetime) - state lives as
-    plain statics here, same pattern as win64_input/win64_gamepad, rather than an opaque handle.
+    plain statics here, same pattern as Win64Input/Win64Gamepad, rather than an opaque handle.
 */
 
 #define WIN64_RENDER_FRAME_COUNT 3
 
-static IDXGIFactory6              *gWin64RenderFactory;
-static IDXGIAdapter1              *gWin64RenderAdapter;
-static ID3D12Device               *gWin64RenderDevice;
-static ID3D12CommandQueue         *gWin64RenderCommandQueue;
-static ID3D12CommandAllocator     *gWin64RenderCommandAllocators[WIN64_RENDER_FRAME_COUNT];
-static ID3D12GraphicsCommandList  *gWin64RenderCommandList;
-static IDXGISwapChain4            *gWin64RenderSwapChain;
-static ID3D12DescriptorHeap       *gWin64RenderRtvHeap;
-static UINT                        gWin64RenderRtvDescriptorSize;
-static ID3D12Resource             *gWin64RenderBackBuffers[WIN64_RENDER_FRAME_COUNT];
+global IDXGIFactory6              *gWin64RenderFactory;
+global IDXGIAdapter1              *gWin64RenderAdapter;
+global ID3D12Device               *gWin64RenderDevice;
+global ID3D12CommandQueue         *gWin64RenderCommandQueue;
+global ID3D12CommandAllocator     *gWin64RenderCommandAllocators[WIN64_RENDER_FRAME_COUNT];
+global ID3D12GraphicsCommandList  *gWin64RenderCommandList;
+global IDXGISwapChain4            *gWin64RenderSwapChain;
+global ID3D12DescriptorHeap       *gWin64RenderRtvHeap;
+global UINT                        gWin64RenderRtvDescriptorSize;
+global ID3D12Resource             *gWin64RenderBackBuffers[WIN64_RENDER_FRAME_COUNT];
 
-static ID3D12Fence *gWin64RenderFence;
-static HANDLE        gWin64RenderFenceEvent;
-static u64            gWin64RenderNextFenceValue = 1;
-static u64            gWin64RenderFrameFenceValues[WIN64_RENDER_FRAME_COUNT];
+global ID3D12Fence *gWin64RenderFence;
+global HANDLE        gWin64RenderFenceEvent;
+global ReUint64            gWin64RenderNextFenceValue = 1;
+global ReUint64            gWin64RenderFrameFenceValues[WIN64_RENDER_FRAME_COUNT];
 
-static b8  gWin64RenderInitialized;
-static b8  gWin64RenderResizePending;
-static u32 gWin64RenderPendingWidth;
-static u32 gWin64RenderPendingHeight;
+global ReBool  gWin64RenderInitialized;
+global ReBool  gWin64RenderResizePending;
+global ReUint32 gWin64RenderPendingWidth;
+global ReUint32 gWin64RenderPendingHeight;
 
-static void
-win64_render_show_error (const wchar_t *message)
+internal void
+Win64_Render_ShowError (const wchar_t *message)
 {
     MessageBoxW (NULL, message, L"Hydra - Fatal Render Error", MB_OK | MB_ICONERROR);
 }
 
-static void
-win64_render_log_adapter (const DXGI_ADAPTER_DESC1 *desc, D3D12_RAYTRACING_TIER tier)
+internal void
+Win64_Render_LogAdapter (const DXGI_ADAPTER_DESC1 *desc, D3D12_RAYTRACING_TIER tier)
 {
-    log_info ("[win64_render] adapter: %ls  DXR tier: %d", desc->Description, (int) tier);
+    RE_LOG_INFO ("[Win64Render] adapter: %ls  DXR tier: %d", desc->Description, (int) tier);
 }
 
-static D3D12_RESOURCE_BARRIER
-win64_render_transition_barrier (ID3D12Resource *resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
+internal D3D12_RESOURCE_BARRIER
+Win64_Render_TransitionBarrier (ID3D12Resource *resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
 {
     D3D12_RESOURCE_BARRIER barrier = {0};
     barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -71,8 +71,8 @@ win64_render_transition_barrier (ID3D12Resource *resource, D3D12_RESOURCE_STATES
     return barrier;
 }
 
-static D3D12_CPU_DESCRIPTOR_HANDLE
-win64_render_rtv_handle (u32 bufferIndex)
+internal D3D12_CPU_DESCRIPTOR_HANDLE
+Win64_Render_RtvHandle (ReUint32 bufferIndex)
 {
     /* Struct-by-value COM methods take an extra out-pointer parameter in the C vtable headers
      * (C has no equivalent to C++'s hidden-return-pointer calling convention here).
@@ -85,12 +85,12 @@ win64_render_rtv_handle (u32 bufferIndex)
 }
 
 /* Full GPU-idle wait - used for resize/shutdown, not the per-frame draw path (see
- * win64_render_wait_for_frame for the cheaper per-slot wait used there).
+ * Win64_Render_WaitForFrame for the cheaper per-slot wait used there).
  */
-static void
-win64_render_flush_gpu (void)
+internal void
+Win64_Render_FlushGpu (void)
 {
-    u64 valueToWaitFor = gWin64RenderNextFenceValue;
+    ReUint64 valueToWaitFor = gWin64RenderNextFenceValue;
     gWin64RenderCommandQueue->lpVtbl->Signal (gWin64RenderCommandQueue, gWin64RenderFence, valueToWaitFor);
     gWin64RenderNextFenceValue += 1;
 
@@ -101,10 +101,10 @@ win64_render_flush_gpu (void)
     }
 }
 
-static void
-win64_render_wait_for_frame (u32 bufferIndex)
+internal void
+Win64_Render_WaitForFrame (ReUint32 bufferIndex)
 {
-    u64 targetValue = gWin64RenderFrameFenceValues[bufferIndex];
+    ReUint64 targetValue = gWin64RenderFrameFenceValues[bufferIndex];
 
     if (targetValue != 0 && gWin64RenderFence->lpVtbl->GetCompletedValue (gWin64RenderFence) < targetValue)
     {
@@ -113,8 +113,8 @@ win64_render_wait_for_frame (u32 bufferIndex)
     }
 }
 
-static b8
-win64_render_create_factory (void)
+internal ReBool
+Win64_Render_CreateFactory (void)
 {
     UINT flags = 0;
 
@@ -135,27 +135,27 @@ win64_render_create_factory (void)
     HRESULT hr = CreateDXGIFactory2 (flags, &IID_IDXGIFactory2, (void **) &factory2);
     if (FAILED (hr))
     {
-        win64_render_show_error (L"CreateDXGIFactory2 failed.");
-        return 0;
+        Win64_Render_ShowError (L"CreateDXGIFactory2 failed.");
+        return RE_False;
     }
 
     hr = factory2->lpVtbl->QueryInterface (factory2, &IID_IDXGIFactory6, (void **) &gWin64RenderFactory);
     factory2->lpVtbl->Release (factory2);
     if (FAILED (hr))
     {
-        win64_render_show_error (L"IDXGIFactory6 not available - please update your GPU driver.");
-        return 0;
+        Win64_Render_ShowError (L"IDXGIFactory6 not available - please update your GPU driver.");
+        return RE_False;
     }
 
-    return 1;
+    return RE_True;
 }
 
 /* Picks the highest-preference adapter (favors the discrete GPU on hybrid-graphics laptops) that
  * also supports DXR Tier 1.0+ - this engine's rendering plan fundamentally depends on hardware
  * raytracing, so a machine without it is a real, immediate problem worth failing loudly on now.
  */
-static b8
-win64_render_select_adapter_and_create_device (void)
+internal ReBool
+Win64_Render_SelectAdapterAndCreateDevice (void)
 {
     for (UINT index = 0; ; index += 1)
     {
@@ -190,25 +190,25 @@ win64_render_select_adapter_and_create_device (void)
 
         if (SUCCEEDED (hr) && options5.RaytracingTier >= D3D12_RAYTRACING_TIER_1_0)
         {
-            win64_render_log_adapter (&desc, options5.RaytracingTier);
+            Win64_Render_LogAdapter (&desc, options5.RaytracingTier);
             gWin64RenderAdapter = adapter;
             gWin64RenderDevice  = device;
-            return 1;
+            return RE_True;
         }
 
         device->lpVtbl->Release (device);
         adapter->lpVtbl->Release (adapter);
     }
 
-    win64_render_show_error (
+    Win64_Render_ShowError (
         L"No DXR (DirectX Raytracing) Tier 1.0+ capable GPU found.\n\n"
         L"This engine requires hardware raytracing support.");
 
-    return 0;
+    return RE_False;
 }
 
-static b8
-win64_render_create_command_infrastructure (void)
+internal ReBool
+Win64_Render_CreateCommandInfrastructure (void)
 {
     D3D12_COMMAND_QUEUE_DESC queueDesc = {0};
     queueDesc.Type  = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -218,19 +218,19 @@ win64_render_create_command_infrastructure (void)
         gWin64RenderDevice, &queueDesc, &IID_ID3D12CommandQueue, (void **) &gWin64RenderCommandQueue);
     if (FAILED (hr))
     {
-        win64_render_show_error (L"CreateCommandQueue failed.");
-        return 0;
+        Win64_Render_ShowError (L"CreateCommandQueue failed.");
+        return RE_False;
     }
 
-    for (u32 i = 0; i < WIN64_RENDER_FRAME_COUNT; i += 1)
+    for (ReUint32 i = 0; i < WIN64_RENDER_FRAME_COUNT; i += 1)
     {
         hr = gWin64RenderDevice->lpVtbl->CreateCommandAllocator (
             gWin64RenderDevice, D3D12_COMMAND_LIST_TYPE_DIRECT,
             &IID_ID3D12CommandAllocator, (void **) &gWin64RenderCommandAllocators[i]);
         if (FAILED (hr))
         {
-            win64_render_show_error (L"CreateCommandAllocator failed.");
-            return 0;
+            Win64_Render_ShowError (L"CreateCommandAllocator failed.");
+            return RE_False;
         }
     }
 
@@ -242,25 +242,25 @@ win64_render_create_command_infrastructure (void)
         &IID_ID3D12GraphicsCommandList, (void **) &gWin64RenderCommandList);
     if (FAILED (hr))
     {
-        win64_render_show_error (L"CreateCommandList failed.");
-        return 0;
+        Win64_Render_ShowError (L"CreateCommandList failed.");
+        return RE_False;
     }
 
-    /* Command lists start open/recording - close it since win64_render_draw always Reset()s
+    /* Command lists start open/recording - close it since Win64_Render_Draw always Reset()s
      * before recording anyway.
      */
     gWin64RenderCommandList->lpVtbl->Close (gWin64RenderCommandList);
 
-    return 1;
+    return RE_True;
 }
 
-static void
-win64_render_recreate_rtvs (void)
+internal void
+Win64_Render_RecreateRtvs (void)
 {
     D3D12_CPU_DESCRIPTOR_HANDLE handle;
     gWin64RenderRtvHeap->lpVtbl->GetCPUDescriptorHandleForHeapStart (gWin64RenderRtvHeap, &handle);
 
-    for (u32 i = 0; i < WIN64_RENDER_FRAME_COUNT; i += 1)
+    for (ReUint32 i = 0; i < WIN64_RENDER_FRAME_COUNT; i += 1)
     {
         gWin64RenderSwapChain->lpVtbl->GetBuffer (gWin64RenderSwapChain, i, &IID_ID3D12Resource, (void **) &gWin64RenderBackBuffers[i]);
 
@@ -270,8 +270,8 @@ win64_render_recreate_rtvs (void)
     }
 }
 
-static b8
-win64_render_create_swapchain (HWND window)
+internal ReBool
+Win64_Render_CreateSwapchain (HWND window)
 {
     RECT clientRect;
     GetClientRect (window, &clientRect);
@@ -294,8 +294,8 @@ win64_render_create_swapchain (HWND window)
         gWin64RenderFactory, (IUnknown *) gWin64RenderCommandQueue, window, &desc, NULL, NULL, &swapChain1);
     if (FAILED (hr))
     {
-        win64_render_show_error (L"CreateSwapChainForHwnd failed.");
-        return 0;
+        Win64_Render_ShowError (L"CreateSwapChainForHwnd failed.");
+        return RE_False;
     }
 
     /* Disables DXGI's automatic Alt+Enter fullscreen toggle - a known footgun alongside manual
@@ -307,8 +307,8 @@ win64_render_create_swapchain (HWND window)
     swapChain1->lpVtbl->Release (swapChain1);
     if (FAILED (hr))
     {
-        win64_render_show_error (L"IDXGISwapChain4 not available.");
-        return 0;
+        Win64_Render_ShowError (L"IDXGISwapChain4 not available.");
+        return RE_False;
     }
 
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {0};
@@ -320,76 +320,76 @@ win64_render_create_swapchain (HWND window)
         gWin64RenderDevice, &rtvHeapDesc, &IID_ID3D12DescriptorHeap, (void **) &gWin64RenderRtvHeap);
     if (FAILED (hr))
     {
-        win64_render_show_error (L"CreateDescriptorHeap (RTV) failed.");
-        return 0;
+        Win64_Render_ShowError (L"CreateDescriptorHeap (RTV) failed.");
+        return RE_False;
     }
 
     gWin64RenderRtvDescriptorSize =
         gWin64RenderDevice->lpVtbl->GetDescriptorHandleIncrementSize (gWin64RenderDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-    win64_render_recreate_rtvs ();
+    Win64_Render_RecreateRtvs ();
 
-    return 1;
+    return RE_True;
 }
 
-static b8
-win64_render_create_fence (void)
+internal ReBool
+Win64_Render_CreateFence (void)
 {
     HRESULT hr = gWin64RenderDevice->lpVtbl->CreateFence (
         gWin64RenderDevice, 0, D3D12_FENCE_FLAG_NONE, &IID_ID3D12Fence, (void **) &gWin64RenderFence);
     if (FAILED (hr))
     {
-        win64_render_show_error (L"CreateFence failed.");
-        return 0;
+        Win64_Render_ShowError (L"CreateFence failed.");
+        return RE_False;
     }
 
     gWin64RenderFenceEvent = CreateEventW (NULL, FALSE, FALSE, NULL);
     if (!gWin64RenderFenceEvent)
     {
-        win64_render_show_error (L"CreateEventW (fence event) failed.");
-        return 0;
+        Win64_Render_ShowError (L"CreateEventW (fence event) failed.");
+        return RE_False;
     }
 
-    return 1;
+    return RE_True;
 }
 
-b8
-win64_render_init (HWND window)
+ReBool
+Win64_Render_Init (HWND window)
 {
-    if (!win64_render_create_factory ())                   { return 0; }
-    if (!win64_render_select_adapter_and_create_device ()) { return 0; }
-    if (!win64_render_create_command_infrastructure ())    { return 0; }
-    if (!win64_render_create_swapchain (window))           { return 0; }
-    if (!win64_render_create_fence ())                     { return 0; }
+    if (!Win64_Render_CreateFactory ())                   { return 0; }
+    if (!Win64_Render_SelectAdapterAndCreateDevice ()) { return 0; }
+    if (!Win64_Render_CreateCommandInfrastructure ())    { return 0; }
+    if (!Win64_Render_CreateSwapchain (window))           { return 0; }
+    if (!Win64_Render_CreateFence ())                     { return 0; }
 
-    gWin64RenderInitialized = 1;
+    gWin64RenderInitialized = RE_True;
 
-    return 1;
+    return RE_True;
 }
 
 void
-win64_render_draw (void)
+Win64_Render_Draw (void)
 {
-    u32 bufferIndex = gWin64RenderSwapChain->lpVtbl->GetCurrentBackBufferIndex (gWin64RenderSwapChain);
+    ReUint32 bufferIndex = gWin64RenderSwapChain->lpVtbl->GetCurrentBackBufferIndex (gWin64RenderSwapChain);
 
-    win64_render_wait_for_frame (bufferIndex);
+    Win64_Render_WaitForFrame (bufferIndex);
 
     ID3D12CommandAllocator *allocator = gWin64RenderCommandAllocators[bufferIndex];
     allocator->lpVtbl->Reset (allocator);
     gWin64RenderCommandList->lpVtbl->Reset (gWin64RenderCommandList, allocator, NULL);
 
-    D3D12_RESOURCE_BARRIER toRenderTarget = win64_render_transition_barrier (
+    D3D12_RESOURCE_BARRIER toRenderTarget = Win64_Render_TransitionBarrier (
         gWin64RenderBackBuffers[bufferIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
     gWin64RenderCommandList->lpVtbl->ResourceBarrier (gWin64RenderCommandList, 1, &toRenderTarget);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE rtv = win64_render_rtv_handle (bufferIndex);
+    D3D12_CPU_DESCRIPTOR_HANDLE rtv = Win64_Render_RtvHandle (bufferIndex);
     gWin64RenderCommandList->lpVtbl->OMSetRenderTargets (gWin64RenderCommandList, 1, &rtv, FALSE, NULL);
 
     /* Deliberately not black - black is indistinguishable from "nothing rendered" at a glance. */
-    static const f32 clearColor[4] = {0.392f, 0.584f, 0.929f, 1.0f};
+    local_persist const ReFloat32 clearColor[4] = {0.392f, 0.584f, 0.929f, 1.0f};
     gWin64RenderCommandList->lpVtbl->ClearRenderTargetView (gWin64RenderCommandList, rtv, clearColor, 0, NULL);
 
-    D3D12_RESOURCE_BARRIER toPresent = win64_render_transition_barrier (
+    D3D12_RESOURCE_BARRIER toPresent = Win64_Render_TransitionBarrier (
         gWin64RenderBackBuffers[bufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
     gWin64RenderCommandList->lpVtbl->ResourceBarrier (gWin64RenderCommandList, 1, &toPresent);
 
@@ -400,29 +400,29 @@ win64_render_draw (void)
 
     gWin64RenderSwapChain->lpVtbl->Present (gWin64RenderSwapChain, 1, 0);
 
-    u64 signalValue = gWin64RenderNextFenceValue;
+    ReUint64 signalValue = gWin64RenderNextFenceValue;
     gWin64RenderCommandQueue->lpVtbl->Signal (gWin64RenderCommandQueue, gWin64RenderFence, signalValue);
     gWin64RenderFrameFenceValues[bufferIndex] = signalValue;
     gWin64RenderNextFenceValue += 1;
 }
 
 void
-win64_render_notify_resize (u32 width, u32 height)
+Win64_Render_NotifyResize (ReUint32 width, ReUint32 height)
 {
     gWin64RenderPendingWidth  = width;
     gWin64RenderPendingHeight = height;
-    gWin64RenderResizePending = 1;
+    gWin64RenderResizePending = RE_True;
 }
 
 void
-win64_render_process_resize (void)
+Win64_Render_ProcessResize (void)
 {
     if (!gWin64RenderInitialized || !gWin64RenderResizePending)
     {
         return;
     }
 
-    gWin64RenderResizePending = 0;
+    gWin64RenderResizePending = RE_False;
 
     if (gWin64RenderPendingWidth == 0 || gWin64RenderPendingHeight == 0)
     {
@@ -432,9 +432,9 @@ win64_render_process_resize (void)
         return;
     }
 
-    win64_render_flush_gpu ();
+    Win64_Render_FlushGpu ();
 
-    for (u32 i = 0; i < WIN64_RENDER_FRAME_COUNT; i += 1)
+    for (ReUint32 i = 0; i < WIN64_RENDER_FRAME_COUNT; i += 1)
     {
         gWin64RenderBackBuffers[i]->lpVtbl->Release (gWin64RenderBackBuffers[i]);
         gWin64RenderBackBuffers[i]      = NULL;
@@ -446,22 +446,22 @@ win64_render_process_resize (void)
         gWin64RenderPendingWidth, gWin64RenderPendingHeight,
         DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 
-    win64_render_recreate_rtvs ();
+    Win64_Render_RecreateRtvs ();
 }
 
 void
-win64_render_shutdown (void)
+Win64_Render_Shutdown (void)
 {
     if (!gWin64RenderInitialized)
     {
         return;
     }
 
-    win64_render_flush_gpu ();
+    Win64_Render_FlushGpu ();
 
     gWin64RenderCommandList->lpVtbl->Release (gWin64RenderCommandList);
 
-    for (u32 i = 0; i < WIN64_RENDER_FRAME_COUNT; i += 1)
+    for (ReUint32 i = 0; i < WIN64_RENDER_FRAME_COUNT; i += 1)
     {
         gWin64RenderCommandAllocators[i]->lpVtbl->Release (gWin64RenderCommandAllocators[i]);
         gWin64RenderBackBuffers[i]->lpVtbl->Release (gWin64RenderBackBuffers[i]);

@@ -15,16 +15,16 @@
 #define WIN64_COMMAND_LINE_MAX_ARGS  256
 #define WIN64_COMMAND_LINE_ARENA_SIZE (128 * 1024)
 
-static string_view gWin64CommandLineArgs[WIN64_COMMAND_LINE_MAX_ARGS];
-static s32          gWin64CommandLineArgCount;
+global ReStringView gWin64CommandLineArgs[WIN64_COMMAND_LINE_MAX_ARGS];
+global ReSint32          gWin64CommandLineArgCount;
 
-static arena gWin64CommandLineArena;
-static u8    gWin64CommandLineArenaBuffer[WIN64_COMMAND_LINE_ARENA_SIZE];
+global ReArena gWin64CommandLineArena;
+global ReUint8    gWin64CommandLineArenaBuffer[WIN64_COMMAND_LINE_ARENA_SIZE];
 
 void
-win64_command_line_init (void)
+Win64_CommandLine_Init (void)
 {
-    arena_init (&gWin64CommandLineArena, gWin64CommandLineArenaBuffer, sizeof (gWin64CommandLineArenaBuffer));
+    RE_Arena_Init (&gWin64CommandLineArena, gWin64CommandLineArenaBuffer, sizeof (gWin64CommandLineArenaBuffer));
 
     int    wideArgCount = 0;
     LPWSTR *wideArgs     = CommandLineToArgvW (GetCommandLineW (), &wideArgCount);
@@ -34,21 +34,21 @@ win64_command_line_init (void)
         return;
     }
 
-    s32 argCount = (wideArgCount > WIN64_COMMAND_LINE_MAX_ARGS) ? WIN64_COMMAND_LINE_MAX_ARGS : wideArgCount;
+    ReSint32 argCount = (wideArgCount > WIN64_COMMAND_LINE_MAX_ARGS) ? WIN64_COMMAND_LINE_MAX_ARGS : wideArgCount;
 
-    for (s32 i = 0; i < argCount; i += 1)
+    for (ReSint32 i = 0; i < argCount; i += 1)
     {
         /* Size-then-convert: first call sizes the buffer (including room for the null
-         * terminator, which is why the resulting string_view's length is byteCountWithNull - 1).
+         * terminator, which is why the resulting ReStringView's length is byteCountWithNull - 1).
          */
         int byteCountWithNull = WideCharToMultiByte (CP_UTF8, 0, wideArgs[i], -1, NULL, 0, NULL, NULL);
         if (byteCountWithNull <= 0)
         {
-            gWin64CommandLineArgs[i] = string_view_from_bytes (0, 0);
+            gWin64CommandLineArgs[i] = RE_StringView_FromBytes (0, 0);
             continue;
         }
 
-        u8 *buffer = (u8 *) arena_alloc (&gWin64CommandLineArena, (usize) byteCountWithNull, 1);
+        ReUint8 *buffer = (ReUint8 *) RE_Arena_Alloc (&gWin64CommandLineArena, (ReUint64) byteCountWithNull, 1);
         if (!buffer)
         {
             /* Arena exhausted (should never realistically happen given the sizing above) -
@@ -60,7 +60,7 @@ win64_command_line_init (void)
 
         WideCharToMultiByte (CP_UTF8, 0, wideArgs[i], -1, (char *) buffer, byteCountWithNull, NULL, NULL);
 
-        gWin64CommandLineArgs[i] = string_view_from_bytes (buffer, (usize) (byteCountWithNull - 1));
+        gWin64CommandLineArgs[i] = RE_StringView_FromBytes (buffer, (ReUint64) (byteCountWithNull - 1));
     }
 
     gWin64CommandLineArgCount = argCount;
@@ -68,14 +68,14 @@ win64_command_line_init (void)
     LocalFree (wideArgs);
 }
 
-s32
-win64_command_line_get_arg_count (void)
+ReSint32
+Win64_CommandLine_GetArgCount (void)
 {
     return gWin64CommandLineArgCount;
 }
 
-string_view *
-win64_command_line_get_args (void)
+ReStringView *
+Win64_CommandLine_GetArgs (void)
 {
     return gWin64CommandLineArgs;
 }

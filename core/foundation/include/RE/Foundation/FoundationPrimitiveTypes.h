@@ -4,25 +4,23 @@
 
 #pragma once
 
+#include <RE/Foundation/FoundationCompiler.h>
 #include <RE/Foundation/FoundationPrimitivePredef.h>
 
-typedef __platform_primitive_uint8   u8;
-typedef __platform_primitive_uint16  u16;
-typedef __platform_primitive_uint32  u32;
-typedef __platform_primitive_uint64  u64;
+typedef __platform_primitive_uint8   ReUint8;
+typedef __platform_primitive_uint16  ReUint16;
+typedef __platform_primitive_uint32  ReUint32;
+typedef __platform_primitive_uint64  ReUint64;
 
-typedef __platform_primitive_int8    s8;
-typedef __platform_primitive_int16   s16;
-typedef __platform_primitive_int32   s32;
-typedef __platform_primitive_int64   s64;
+typedef __platform_primitive_int8    ReSint8;
+typedef __platform_primitive_int16   ReSint16;
+typedef __platform_primitive_int32   ReSint32;
+typedef __platform_primitive_int64   ReSint64;
 
-typedef __platform_primitive_float32 f32;
-typedef __platform_primitive_float64 f64;
+typedef __platform_primitive_float32 ReFloat32;
+typedef __platform_primitive_float64 ReFloat64;
 
-typedef __platform_primitive_uint8   b8;
+typedef __platform_primitive_uint8   ReBool;
 
-typedef __platform_primitive_uintptr uptr;
-typedef __platform_primitive_intptr  sptr;
-
-typedef __platform_primitive_usize   usize;
-typedef __platform_primitive_isize   ssize;
+#define RE_False 0
+#define RE_True  1

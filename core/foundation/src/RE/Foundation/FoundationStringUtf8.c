@@ -6,33 +6,33 @@
 
 #include <assert.h>
 
-static b8
-utf8_is_continuation_byte (u8 b)
+internal ReBool
+Utf8_IsContinuationByte (ReUint8 b)
 {
-    return (b8) ((b & 0xC0) == 0x80);
+    return (ReBool) ((b & 0xC0) == 0x80);
 }
 
 /* Does the real decode work, additionally reporting whether the sequence was well-formed (no
- * substitution) - the public utf8_decode() discards that flag (it always substitutes and
- * proceeds regardless); utf8_is_valid() is the one caller that actually needs to know.
+ * substitution) - the public RE_Utf8_Decode() discards that flag (it always substitutes and
+ * proceeds regardless); RE_Utf8_IsValid() is the one caller that actually needs to know.
  */
-static usize
-utf8_decode_ex (const u8 *bytes, usize remainingLength, u32 *outCodepoint, b8 *outWasValid)
+internal ReUint64
+Utf8_DecodeEx (const ReUint8 *bytes, ReUint64 remainingLength, ReUint32 *outCodepoint, ReBool *outWasValid)
 {
     assert (remainingLength > 0);
 
-    u8 lead = bytes[0];
+    ReUint8 lead = bytes[0];
 
     if ((lead & 0x80) == 0)
     {
         *outCodepoint = lead;
-        *outWasValid  = 1;
+        *outWasValid  = RE_True;
         return 1;
     }
 
-    usize sequenceLength;
-    u32   codepoint;
-    u32   minCodepoint;
+    ReUint64 sequenceLength;
+    ReUint32   codepoint;
+    ReUint32   minCodepoint;
 
     if ((lead & 0xE0) == 0xC0)
     {
@@ -55,144 +55,144 @@ utf8_decode_ex (const u8 *bytes, usize remainingLength, u32 *outCodepoint, b8 *o
     else
     {
         /* Stray continuation byte, or an obsolete/invalid lead pattern (0xF8-0xFF). */
-        *outCodepoint = UTF8_REPLACEMENT_CODEPOINT;
-        *outWasValid  = 0;
+        *outCodepoint = RE_UTF8_REPLACEMENT_CODEPOINT;
+        *outWasValid  = RE_False;
         return 1;
     }
 
     if (remainingLength < sequenceLength)
     {
-        *outCodepoint = UTF8_REPLACEMENT_CODEPOINT;
-        *outWasValid  = 0;
+        *outCodepoint = RE_UTF8_REPLACEMENT_CODEPOINT;
+        *outWasValid  = RE_False;
         return 1;
     }
 
-    for (usize i = 1; i < sequenceLength; i += 1)
+    for (ReUint64 i = 1; i < sequenceLength; i += 1)
     {
-        if (!utf8_is_continuation_byte (bytes[i]))
+        if (!Utf8_IsContinuationByte (bytes[i]))
         {
             /* Don't consume the bad continuation byte as part of this failed sequence - only the
              * lead byte is consumed, so the next decode call resyncs starting at bytes[i].
              */
-            *outCodepoint = UTF8_REPLACEMENT_CODEPOINT;
-            *outWasValid  = 0;
+            *outCodepoint = RE_UTF8_REPLACEMENT_CODEPOINT;
+            *outWasValid  = RE_False;
             return 1;
         }
 
         codepoint = (codepoint << 6) | (bytes[i] & 0x3Fu);
     }
 
-    b8 overlong  = (b8) (codepoint < minCodepoint);
-    b8 surrogate = (b8) (codepoint >= 0xD800u && codepoint <= 0xDFFFu);
-    b8 tooLarge  = (b8) (codepoint > 0x10FFFFu);
+    ReBool overlong  = (ReBool) (codepoint < minCodepoint);
+    ReBool surrogate = (ReBool) (codepoint >= 0xD800u && codepoint <= 0xDFFFu);
+    ReBool tooLarge  = (ReBool) (codepoint > 0x10FFFFu);
 
     if (overlong || surrogate || tooLarge)
     {
-        *outCodepoint = UTF8_REPLACEMENT_CODEPOINT;
-        *outWasValid  = 0;
+        *outCodepoint = RE_UTF8_REPLACEMENT_CODEPOINT;
+        *outWasValid  = RE_False;
         return 1;
     }
 
     *outCodepoint = codepoint;
-    *outWasValid  = 1;
+    *outWasValid  = RE_True;
     return sequenceLength;
 }
 
-usize
-utf8_decode (const u8 *bytes, usize remainingLength, u32 *outCodepoint)
+ReUint64
+RE_Utf8_Decode (const ReUint8 *bytes, ReUint64 remainingLength, ReUint32 *outCodepoint)
 {
-    b8 wasValid;
-    return utf8_decode_ex (bytes, remainingLength, outCodepoint, &wasValid);
+    ReBool wasValid;
+    return Utf8_DecodeEx (bytes, remainingLength, outCodepoint, &wasValid);
 }
 
-usize
-utf8_encode (u32 codepoint, u8 outBytes[4])
+ReUint64
+RE_Utf8_Encode (ReUint32 codepoint, ReUint8 outBytes[4])
 {
     assert (codepoint <= 0x10FFFFu && !(codepoint >= 0xD800u && codepoint <= 0xDFFFu));
 
     if (codepoint <= 0x7Fu)
     {
-        outBytes[0] = (u8) codepoint;
+        outBytes[0] = (ReUint8) codepoint;
         return 1;
     }
 
     if (codepoint <= 0x7FFu)
     {
-        outBytes[0] = (u8) (0xC0u | (codepoint >> 6));
-        outBytes[1] = (u8) (0x80u | (codepoint & 0x3Fu));
+        outBytes[0] = (ReUint8) (0xC0u | (codepoint >> 6));
+        outBytes[1] = (ReUint8) (0x80u | (codepoint & 0x3Fu));
         return 2;
     }
 
     if (codepoint <= 0xFFFFu)
     {
-        outBytes[0] = (u8) (0xE0u | (codepoint >> 12));
-        outBytes[1] = (u8) (0x80u | ((codepoint >> 6) & 0x3Fu));
-        outBytes[2] = (u8) (0x80u | (codepoint & 0x3Fu));
+        outBytes[0] = (ReUint8) (0xE0u | (codepoint >> 12));
+        outBytes[1] = (ReUint8) (0x80u | ((codepoint >> 6) & 0x3Fu));
+        outBytes[2] = (ReUint8) (0x80u | (codepoint & 0x3Fu));
         return 3;
     }
 
-    outBytes[0] = (u8) (0xF0u | (codepoint >> 18));
-    outBytes[1] = (u8) (0x80u | ((codepoint >> 12) & 0x3Fu));
-    outBytes[2] = (u8) (0x80u | ((codepoint >> 6) & 0x3Fu));
-    outBytes[3] = (u8) (0x80u | (codepoint & 0x3Fu));
+    outBytes[0] = (ReUint8) (0xF0u | (codepoint >> 18));
+    outBytes[1] = (ReUint8) (0x80u | ((codepoint >> 12) & 0x3Fu));
+    outBytes[2] = (ReUint8) (0x80u | ((codepoint >> 6) & 0x3Fu));
+    outBytes[3] = (ReUint8) (0x80u | (codepoint & 0x3Fu));
     return 4;
 }
 
-b8
-utf8_is_valid (string_view sv)
+ReBool
+RE_Utf8_IsValid (ReStringView sv)
 {
-    usize offset = 0;
+    ReUint64 offset = 0;
 
     while (offset < sv.length)
     {
-        u32 codepoint;
-        b8  wasValid;
-        offset += utf8_decode_ex (sv.data + offset, sv.length - offset, &codepoint, &wasValid);
+        ReUint32 codepoint;
+        ReBool  wasValid;
+        offset += Utf8_DecodeEx (sv.data + offset, sv.length - offset, &codepoint, &wasValid);
 
         if (!wasValid)
         {
-            return 0;
+            return RE_False;
         }
     }
 
-    return 1;
+    return RE_True;
 }
 
-usize
-utf8_codepoint_count (string_view sv)
+ReUint64
+RE_Utf8_CodepointCount (ReStringView sv)
 {
-    usize offset = 0;
-    usize count  = 0;
+    ReUint64 offset = 0;
+    ReUint64 count  = 0;
 
     while (offset < sv.length)
     {
-        u32 codepoint;
-        offset += utf8_decode (sv.data + offset, sv.length - offset, &codepoint);
+        ReUint32 codepoint;
+        offset += RE_Utf8_Decode (sv.data + offset, sv.length - offset, &codepoint);
         count  += 1;
     }
 
     return count;
 }
 
-utf8_iterator
-utf8_iterator_create (string_view sv)
+ReUtf8Iterator
+RE_Utf8_IteratorCreate (ReStringView sv)
 {
-    utf8_iterator it;
+    ReUtf8Iterator it;
     it.view   = sv;
     it.offset = 0;
 
     return it;
 }
 
-b8
-utf8_iterator_next (utf8_iterator *it, u32 *outCodepoint)
+ReBool
+RE_Utf8_IteratorNext (ReUtf8Iterator *it, ReUint32 *outCodepoint)
 {
     if (it->offset >= it->view.length)
     {
-        return 0;
+        return RE_False;
     }
 
-    it->offset += utf8_decode (it->view.data + it->offset, it->view.length - it->offset, outCodepoint);
+    it->offset += RE_Utf8_Decode (it->view.data + it->offset, it->view.length - it->offset, outCodepoint);
 
-    return 1;
+    return RE_True;
 }

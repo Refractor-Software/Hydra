@@ -9,7 +9,7 @@
 #include <RE/Foundation/FoundationMemory.h>
 
 void
-arena_init (arena *a, void *memory, usize size)
+RE_Arena_Init (ReArena *a, void *memory, ReUint64 size)
 {
     a->base   = memory;
     a->size   = size;
@@ -17,23 +17,23 @@ arena_init (arena *a, void *memory, usize size)
 }
 
 void *
-arena_alloc (arena *a, usize size, usize alignment)
+RE_Arena_Alloc (ReArena *a, ReUint64 size, ReUint64 alignment)
 {
     assert (alignment != 0 && (alignment & (alignment - 1)) == 0);
 
     /* Align the absolute address, not the offset alone - aligning the offset alone is wrong
      * whenever a->base itself isn't aligned to `alignment`.
      */
-    uptr current = (uptr) a->base + (uptr) a->offset;
-    uptr aligned = (uptr) memory_align_up ((usize) current, alignment);
-    usize padding = (usize) (aligned - current);
+    ReUint64 current = (ReUint64) a->base + (ReUint64) a->offset;
+    ReUint64 aligned = (ReUint64) RE_Memory_AlignUp ((ReUint64) current, alignment);
+    ReUint64 padding = (ReUint64) (aligned - current);
 
     if (padding > a->size - a->offset)
     {
         return 0;
     }
 
-    usize remaining = a->size - a->offset - padding;
+    ReUint64 remaining = a->size - a->offset - padding;
     if (size > remaining)
     {
         return 0;
@@ -45,46 +45,46 @@ arena_alloc (arena *a, usize size, usize alignment)
 }
 
 void
-arena_reset (arena *a)
+RE_Arena_Reset (ReArena *a)
 {
     a->offset = 0;
 }
 
-arena_marker
-arena_get_marker (const arena *a)
+ReArenaMarker
+RE_Arena_GetMarker (const ReArena *a)
 {
-    arena_marker marker;
+    ReArenaMarker marker;
     marker.offset = a->offset;
 
     return marker;
 }
 
 void
-arena_reset_to_marker (arena *a, arena_marker marker)
+RE_Arena_ResetToMarker (ReArena *a, ReArenaMarker marker)
 {
     a->offset = marker.offset;
 }
 
-static void *
-arena_allocator_alloc (void *ctx, usize size)
+internal void *
+Arena_AllocatorAlloc (void *ctx, ReUint64 size)
 {
-    return arena_alloc ((arena *) ctx, size, MEMORY_DEFAULT_ALIGNMENT);
+    return RE_Arena_Alloc ((ReArena *) ctx, size, RE_MEMORY_DEFAULT_ALIGNMENT);
 }
 
-static void
-arena_allocator_free (void *ctx, void *ptr)
+internal void
+Arena_AllocatorFree (void *ctx, void *ptr)
 {
     (void) ctx;
     (void) ptr;
 }
 
-memory_allocator
-arena_as_allocator (arena *a)
+ReAllocator
+RE_Arena_AsAllocator (ReArena *a)
 {
-    memory_allocator allocator;
+    ReAllocator allocator;
     allocator._context = a;
-    allocator._alloc   = arena_allocator_alloc;
-    allocator._free    = arena_allocator_free;
+    allocator._alloc   = Arena_AllocatorAlloc;
+    allocator._free    = Arena_AllocatorFree;
 
     return allocator;
 }

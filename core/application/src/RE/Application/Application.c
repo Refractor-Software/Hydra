@@ -6,32 +6,32 @@
 
 #include <RE/Log/Log.h>
 
-typedef struct app_state
+typedef struct ReAppState
 {
-    u64 tickCount;
-} app_state;
+    ReUint64 tickCount;
+} ReAppState;
 
-b8
-application_init (app_context *context)
+ReBool
+RE_Application_Init (ReAppContext *context)
 {
-    app_state *state = (app_state *) context->memory;
+    ReAppState *state = (ReAppState *) context->memory;
     state->tickCount = 0;
 
-    log_info ("application_init: engine started");
+    RE_LOG_INFO ("RE_Application_Init: engine started");
 
-    for (s32 i = 0; i < context->argCount; i += 1)
+    for (ReSint32 i = 0; i < context->argCount; i += 1)
     {
-        string_view arg = context->args[i];
-        log_info ("arg[%d]: %.*s", i, (int) arg.length, (const char *) arg.data);
+        ReStringView arg = context->args[i];
+        RE_LOG_INFO ("arg[%d]: %.*s", i, (int) arg.length, (const char *) arg.data);
     }
 
-    return 1;
+    return RE_True;
 }
 
 void
-application_tick (app_context *context, f32 deltaTime)
+RE_Application_Tick (ReAppContext *context, ReFloat32 deltaTime)
 {
-    app_state *state = (app_state *) context->memory;
+    ReAppState *state = (ReAppState *) context->memory;
     state->tickCount += 1;
 
     (void) deltaTime;
@@ -39,7 +39,7 @@ application_tick (app_context *context, f32 deltaTime)
 }
 
 void
-application_shutdown (app_context *context)
+RE_Application_Shutdown (ReAppContext *context)
 {
     (void) context;
 }
