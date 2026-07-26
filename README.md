@@ -53,3 +53,8 @@ required to build the engine internals themselves or use the optional C++ layer 
 "C/C++" instead of *just* "C" or "C++" is justifiable.
 
 See the [style guide](doc/README-style_guide.md) for more information. (Note: It's still a bit outdated, but we'll get it up to speed soon.)
+
+## Design References
+
+Hydra's design and architecture is inspired by lessons learned from the choices seen in [Unreal Engine](https://www.unrealengine.com/), [RE Engine](https://www.youtube.com/@CAPCOM_RandD/), [Godot](https://godotengine.org), [Kohi](https://kohiengine.com/), and the [Handmade Hero engine](https://guide.handmadehero.org/).
+No code is copied/used directly from these engines.
