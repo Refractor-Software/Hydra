@@ -63,6 +63,8 @@ main( void )
     RE_Test_Run( "VirtualMemory", RE_Test_VirtualMemory );
     RE_Test_Run( "MemoryMetadata", RE_Test_MemoryMetadata );
     RE_Test_Run( "SpinLock", RE_Test_SpinLock );
+    RE_Test_Run( "MemoryArena", RE_Test_MemoryArena );
+    RE_Test_Run( "MemoryScratch", RE_Test_MemoryScratch );
 
     return (int) RE_Test_Summary();
 }

@@ -80,3 +80,5 @@ ReSint32 RE_Test_Summary( void );
 void RE_Test_VirtualMemory( void );
 void RE_Test_MemoryMetadata( void );
 void RE_Test_SpinLock( void );
+void RE_Test_MemoryArena( void );
+void RE_Test_MemoryScratch( void );

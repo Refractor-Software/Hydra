@@ -2,7 +2,7 @@ add_executable(com.refractor.core.foundation.test)
 
 target_include_directories(com.refractor.core.foundation.test PRIVATE .)
 
-file(GLOB_RECURSE foundation_test_sources "*.h" "*.c")
+file(GLOB_RECURSE foundation_test_sources CONFIGURE_DEPENDS "*.h" "*.c")
 
 target_sources(com.refractor.core.foundation.test PRIVATE ${foundation_test_sources})
 

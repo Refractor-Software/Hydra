@@ -8,7 +8,7 @@ set_target_properties(com.refractor.kernel.win64 PROPERTIES OUTPUT_NAME Hydra)
 
 target_include_directories(com.refractor.kernel.win64 PRIVATE src)
 
-file(GLOB_RECURSE win64_sources "src/*.h" "src/*.c")
+file(GLOB_RECURSE win64_sources CONFIGURE_DEPENDS "src/*.h" "src/*.c")
 
 target_sources(com.refractor.kernel.win64 PRIVATE ${win64_sources})
 

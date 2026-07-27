@@ -3,8 +3,8 @@ add_library(com.refractor.core.services.input STATIC)
 target_include_directories(com.refractor.core.services.input PUBLIC include)
 target_include_directories(com.refractor.core.services.input PRIVATE src)
 
-file(GLOB_RECURSE input_headers "include/*.h")
-file(GLOB_RECURSE input_sources "src/*.h" "src/*.c")
+file(GLOB_RECURSE input_headers CONFIGURE_DEPENDS "include/*.h")
+file(GLOB_RECURSE input_sources CONFIGURE_DEPENDS "src/*.h" "src/*.c")
 
 target_sources(com.refractor.core.services.input PUBLIC ${input_headers})
 target_sources(com.refractor.core.services.input PRIVATE ${input_sources})
