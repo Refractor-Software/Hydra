@@ -14,6 +14,8 @@
 #include <RE/Foundation/FoundationAtomic.h>
 #include <RE/Foundation/FoundationBuild.h>
 #include <RE/Foundation/FoundationCompiler.h>
+#include <RE/Foundation/FoundationContext.h>
+#include <RE/Foundation/FoundationDebug.h>
 #include <RE/Foundation/FoundationPrimitivePredef.h>
 #include <RE/Foundation/FoundationPrimitiveTypes.h>
 #include <RE/Foundation/FoundationSpinLock.h>

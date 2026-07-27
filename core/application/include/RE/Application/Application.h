@@ -10,7 +10,12 @@
     This is the entire surface the platform kernel is allowed to call into the engine through.
     Everything the engine needs for a given call arrives via ReAppContext - the engine never asks
     the platform for anything on its own, and the kernel never reaches past this struct into
-    engine-internal memory (it owns context->memory, but doesn't interpret what's inside it).
+    engine-internal state.
+
+    Memory is deliberately absent from that handoff. The kernel exposes virtual memory primitives
+    (RE_VirtualMemory_*) and the engine reserves and commits what it needs through them, so the
+    engine can grow, trim, and decommit on its own terms. A single flat block handed across this
+    boundary could do none of those things.
 */
 
 #include <RE/Foundation/FoundationPrimitiveTypes.h>
@@ -18,26 +23,20 @@
 
 #include <RE/Input/Input.h>
 
-/* Kernel-owned. The memory block's internal layout is intentionally undecided - the engine casts
- * it to whatever internal state it needs, and the kernel never interprets those bytes itself.
- */
 typedef struct ReAppContext
 {
-    void *memory;
-    ReUint64   memorySize;
-
     ReInputQueue *input;
 
     /* Parsed process command line, UTF-8, kernel-owned for the process's lifetime. args[0] is
      * the executable path itself (GetCommandLineW()-based parsing includes it), not the first
      * user-supplied argument.
      */
-    ReSint32          argCount;
+    ReSint32      argCount;
     ReStringView *args;
 } ReAppContext;
 
-/* Called once, after context->memory has been reserved/committed and before the first
- * RE_Application_Tick(). Returns 0 if the engine failed to start.
+/* Called once, before the first RE_Application_Tick(). Brings up the engine's memory system among
+ * everything else. Returns 0 if the engine failed to start.
  */
 ReBool RE_Application_Init( ReAppContext *context );
 
@@ -46,5 +45,7 @@ ReBool RE_Application_Init( ReAppContext *context );
  */
 void RE_Application_Tick( ReAppContext *context, ReFloat32 deltaTime );
 
-/* Called once, after the last RE_Application_Tick(), before context->memory is released. */
+/* Called once, after the last RE_Application_Tick(). Releases everything the engine owns, and
+ * reports anything the memory decorators found on the way out.
+ */
 void RE_Application_Shutdown( ReAppContext *context );

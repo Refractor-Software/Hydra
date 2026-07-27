@@ -90,3 +90,4 @@ void RE_Test_MemorySizeClass( void );
 void RE_Test_MemoryHeap( void );
 void RE_Test_MemoryThreadCache( void );
 void RE_Test_MemoryDecorator( void );
+void RE_Test_MemorySystem( void );

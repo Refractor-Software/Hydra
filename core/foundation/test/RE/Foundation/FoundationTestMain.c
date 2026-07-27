@@ -74,5 +74,10 @@ main( void )
     RE_Test_Run( "MemoryThreadCache", RE_Test_MemoryThreadCache );
     RE_Test_Run( "MemoryDecorator", RE_Test_MemoryDecorator );
 
+    /* Last: it brings the whole memory system up and tears it down again, which
+     * would pull the ground out from under any group that ran after it.
+     */
+    RE_Test_Run( "MemorySystem", RE_Test_MemorySystem );
+
     return (int) RE_Test_Summary();
 }

@@ -1360,7 +1360,12 @@ RE_Memory_DefaultDecoratorConfig( void )
     ReMemoryDecoratorConfig config;
     RE_Memory_Zero( &config, sizeof( config ) );
 
-    config.recordCapacity     = 1u << 16;
+    /* Every entry is committed up front and carries an inline callstack, so this is roughly
+     * 170 bytes per entry per tracking decorator. At 65536 that was 30 MB of metadata to watch a
+     * few hundred KiB of allocations - which the stats report made obvious the first time it ran.
+     * Raise it deliberately, and check RE_MemorySystem_ReportStats afterwards.
+     */
+    config.recordCapacity     = 1u << 14;
     config.quarantineDelay    = 4;
     config.quarantineBytes    = 16 * 1024 * 1024;
     config.outOfMemoryReserve = 1 * 1024 * 1024;

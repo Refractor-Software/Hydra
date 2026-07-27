@@ -17,11 +17,10 @@
 
 #include <RE/Application/Application.h>
 
-/* Real memory-region layout (permanent/transient/etc split, if any) is intentionally undecided -
- * see the platform/engine boundary plan. One flat reserved+committed block is enough to prove the
- * ReAppContext wiring works; this is a placeholder size, not a budget.
+/* The kernel no longer owns the engine's memory. It exposes the virtual memory primitives
+ * (RE_VirtualMemory_*, defined in Win64VirtualMemory.c) and the engine reserves and commits what
+ * it needs through them - which is what lets it grow, trim and decommit on its own terms.
  */
-#define WIN64_APP_MEMORY_SIZE ( 64ull * 1024 * 1024 )
 
 /* Small enough to keep inline for now - split into its own win64/time module if it grows beyond
  * a plain QueryPerformanceCounter delta.
@@ -171,25 +170,13 @@ wWinMain( HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
         ShowWindow( window, showCommand );
         UpdateWindow( window );
 
-        void *appMemory = VirtualAlloc( NULL, WIN64_APP_MEMORY_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE );
-        if ( !appMemory )
-        {
-            Win64_Render_Shutdown();
-            DestroyWindow( window );
-            exitCode = 1;
-            __leave;
-        }
-
         ReAppContext context = {0};
-        context.memory      = appMemory;
-        context.memorySize  = WIN64_APP_MEMORY_SIZE;
-        context.input       = Win64_Input_GetQueue();
-        context.argCount    = Win64_CommandLine_GetArgCount();
-        context.args        = Win64_CommandLine_GetArgs();
+        context.input    = Win64_Input_GetQueue();
+        context.argCount = Win64_CommandLine_GetArgCount();
+        context.args     = Win64_CommandLine_GetArgs();
 
         if ( !RE_Application_Init( &context ) )
         {
-            VirtualFree( appMemory, 0, MEM_RELEASE );
             Win64_Render_Shutdown();
             DestroyWindow( window );
             exitCode = 1;
@@ -240,7 +227,6 @@ wWinMain( HINSTANCE instance, HINSTANCE previousInstance, PWSTR commandLine, int
 
         RE_Application_Shutdown( &context );
         Win64_Render_Shutdown();
-        VirtualFree( appMemory, 0, MEM_RELEASE );
         Win64_Startup_ShutdownTiming();
     }
     __except( Win64_Crash_ExceptionFilter( GetExceptionInformation() ) )

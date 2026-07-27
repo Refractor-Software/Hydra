@@ -31,6 +31,7 @@
 #include <RE/Foundation/FoundationMemoryPool.h>
 #include <RE/Foundation/FoundationMemoryRing.h>
 #include <RE/Foundation/FoundationMemoryScratch.h>
+#include <RE/Foundation/FoundationMemorySystem.h>
 #include <RE/Foundation/FoundationMemorySizeClass.h>
 #include <RE/Foundation/FoundationMemoryThreadCache.h>
 #include <RE/Foundation/FoundationMemoryUtility.h>

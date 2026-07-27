@@ -17,7 +17,11 @@
     the only place that sees every allocation.
 */
 
-#define RE_CALLSTACK_MAX_FRAMES 24
+/* Deep enough to reach past the allocator wrappers into real engine code, and no deeper. This
+ * number is multiplied by the decorator record capacity - every frame costs 8 bytes in every
+ * tracked allocation - so it is a memory decision as much as a diagnostic one.
+ */
+#define RE_CALLSTACK_MAX_FRAMES 16
 
 /* Fills frames with return addresses, innermost first, and returns how many were captured.
  *

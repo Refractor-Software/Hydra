@@ -284,7 +284,12 @@ typedef struct ReMemoryDecoratorConfig
     ReBool trace;
     ReBool captureCallstacks;
 
-    ReUint64 recordCapacity;    /* live allocations the trackers can hold */
+    /* Live allocations the trackers can hold.
+     *
+     * Costs roughly 170 bytes per entry per tracking decorator, committed up front - the table is
+     * hashed, so it cannot be filled in lazily. Budget for it rather than picking a round number.
+     */
+    ReUint64 recordCapacity;
     ReUint64 quarantineDelay;   /* ticks before freed memory is really released */
     ReUint64 quarantineBytes;   /* cap, so a level load cannot grow it without bound */
     ReUint64 outOfMemoryReserve;
