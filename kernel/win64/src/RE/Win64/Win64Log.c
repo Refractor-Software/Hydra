@@ -14,9 +14,9 @@
 #define WIN64_LOG_CONSOLE_VISIBLE_ROWS 40
 #define WIN64_LOG_CONSOLE_BUFFER_ROWS  9999
 
-global CRITICAL_SECTION gWin64LogCriticalSection;
-global HANDLE           gWin64LogConsoleHandle;
-global ReBool               gWin64LogHasConsole;
+RE_GLOBAL CRITICAL_SECTION gWin64LogCriticalSection;
+RE_GLOBAL HANDLE           gWin64LogConsoleHandle;
+RE_GLOBAL ReBool               gWin64LogHasConsole;
 
 #if RE_BUILD < RE_BUILD_SHIPPING
 
@@ -24,7 +24,7 @@ global ReBool               gWin64LogHasConsole;
  * the window has to be shrunk to a minimal size first, then the buffer resized, then the window
  * grown to its real final size - the standard, documented-safe ordering for this dance.
  */
-internal void
+RE_INTERNAL void
 Win64_Log_SizeAndPlaceConsole( HWND consoleWindow )
 {
     SMALL_RECT minimalRect = {0, 0, 1, 1};
@@ -45,7 +45,7 @@ Win64_Log_SizeAndPlaceConsole( HWND consoleWindow )
 /* A freshly allocated console isn't guaranteed to actually have focus/be in front - this is
  * what makes it reliably "on screen" rather than just technically existing somewhere.
  */
-internal void
+RE_INTERNAL void
 Win64_Log_BringConsoleToFront( HWND consoleWindow )
 {
     if ( !consoleWindow )
@@ -62,7 +62,7 @@ Win64_Log_BringConsoleToFront( HWND consoleWindow )
  * (future third-party libraries, ad hoc printf-based debugging) that goes through the CRT's
  * stdio streams instead, which otherwise target NUL for a WIN32-subsystem exe.
  */
-internal void
+RE_INTERNAL void
 Win64_Log_RedirectStdio( void )
 {
     FILE *stream;
@@ -119,7 +119,7 @@ Win64_Log_Shutdown( void )
 #endif
 }
 
-internal const char *
+RE_INTERNAL const char *
 Win64_Log_LevelPrefix( ReLogLevel level )
 {
     switch ( level )
@@ -133,7 +133,7 @@ Win64_Log_LevelPrefix( ReLogLevel level )
 /* VT100 color, console-only - a debugger's OutputDebugString sink doesn't interpret escape
  * codes, so these must never reach that path (see RE_Log_WriteRaw below).
  */
-internal const char *
+RE_INTERNAL const char *
 Win64_Log_LevelColor( ReLogLevel level )
 {
     switch ( level )

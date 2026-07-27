@@ -15,11 +15,11 @@
 #define WIN64_COMMAND_LINE_MAX_ARGS  256
 #define WIN64_COMMAND_LINE_ARENA_SIZE ( 128 * 1024 )
 
-global ReStringView gWin64CommandLineArgs[WIN64_COMMAND_LINE_MAX_ARGS];
-global ReSint32          gWin64CommandLineArgCount;
+RE_GLOBAL ReStringView gWin64CommandLineArgs[WIN64_COMMAND_LINE_MAX_ARGS];
+RE_GLOBAL ReSint32          gWin64CommandLineArgCount;
 
-global ReArena gWin64CommandLineArena;
-global ReUint8    gWin64CommandLineArenaBuffer[WIN64_COMMAND_LINE_ARENA_SIZE];
+RE_GLOBAL ReArena gWin64CommandLineArena;
+RE_GLOBAL ReUint8    gWin64CommandLineArenaBuffer[WIN64_COMMAND_LINE_ARENA_SIZE];
 
 void
 Win64_CommandLine_Init( void )

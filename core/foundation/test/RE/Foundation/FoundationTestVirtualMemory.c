@@ -7,7 +7,7 @@
 #include <RE/Foundation/FoundationMemoryUtility.h>
 #include <RE/Foundation/FoundationVirtualMemory.h>
 
-internal ReBool
+RE_INTERNAL ReBool
 VirtualMemory_IsPowerOfTwo( ReUint64 value )
 {
     return (ReBool) ( value != 0 && ( value & ( value - 1 ) ) == 0 );

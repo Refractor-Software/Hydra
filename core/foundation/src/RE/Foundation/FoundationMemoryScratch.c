@@ -26,9 +26,9 @@ typedef struct ReScratchThreadState
     ReBool initialized;
 } ReScratchThreadState;
 
-global RE_THREAD_LOCAL ReScratchThreadState gScratchState;
+RE_GLOBAL RE_THREAD_LOCAL ReScratchThreadState gScratchState;
 
-internal ReBool
+RE_INTERNAL ReBool
 Scratch_EnsureInitialized( void )
 {
     if ( gScratchState.initialized )
@@ -57,7 +57,7 @@ Scratch_EnsureInitialized( void )
     return RE_True;
 }
 
-internal ReBool
+RE_INTERNAL ReBool
 Scratch_IsConflicting( const ReArena *candidate, ReArena *const *conflicts, ReUint32 conflictCount )
 {
     for ( ReUint32 i = 0; i < conflictCount; i += 1 )

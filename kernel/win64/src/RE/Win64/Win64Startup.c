@@ -6,7 +6,7 @@
 
 #include <intrin.h>
 
-internal ReBool
+RE_INTERNAL ReBool
 Win64_Startup_CpuHasAvx( void )
 {
     int cpuInfo[4];
@@ -30,7 +30,7 @@ Win64_Startup_CpuHasAvx( void )
 }
 
 #if RE_TARGET_ISA_AVX2
-internal ReBool
+RE_INTERNAL ReBool
 Win64_Startup_CpuHasAvx2( void )
 {
     int maxLeafInfo[4];

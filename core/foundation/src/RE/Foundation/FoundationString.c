@@ -48,7 +48,7 @@ RE_String_Destroy( ReString *s )
     s->capacity = 0;
 }
 
-internal ReBool
+RE_INTERNAL ReBool
 String_GrowToFit( ReString *s, ReUint64 additionalLength )
 {
     if ( additionalLength > ((ReUint64) -1) - s->length )

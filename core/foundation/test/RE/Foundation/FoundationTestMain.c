@@ -7,10 +7,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-global ReUint32     gTestsRun;
-global ReUint32     gTestsFailed;
-global ReUint32     gCurrentTestFailures;
-global const char  *gCurrentTestName;
+RE_GLOBAL ReUint32     gTestsRun;
+RE_GLOBAL ReUint32     gTestsFailed;
+RE_GLOBAL ReUint32     gCurrentTestFailures;
+RE_GLOBAL const char  *gCurrentTestName;
 
 void
 RE_Test_ReportFailure( const char *file, ReUint32 line, const char *format, ... )

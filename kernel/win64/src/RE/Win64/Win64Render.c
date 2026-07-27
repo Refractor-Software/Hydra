@@ -24,40 +24,40 @@
 
 #define WIN64_RENDER_FRAME_COUNT 3
 
-global IDXGIFactory6              *gWin64RenderFactory;
-global IDXGIAdapter1              *gWin64RenderAdapter;
-global ID3D12Device               *gWin64RenderDevice;
-global ID3D12CommandQueue         *gWin64RenderCommandQueue;
-global ID3D12CommandAllocator     *gWin64RenderCommandAllocators[WIN64_RENDER_FRAME_COUNT];
-global ID3D12GraphicsCommandList  *gWin64RenderCommandList;
-global IDXGISwapChain4            *gWin64RenderSwapChain;
-global ID3D12DescriptorHeap       *gWin64RenderRtvHeap;
-global UINT                        gWin64RenderRtvDescriptorSize;
-global ID3D12Resource             *gWin64RenderBackBuffers[WIN64_RENDER_FRAME_COUNT];
+RE_GLOBAL IDXGIFactory6              *gWin64RenderFactory;
+RE_GLOBAL IDXGIAdapter1              *gWin64RenderAdapter;
+RE_GLOBAL ID3D12Device               *gWin64RenderDevice;
+RE_GLOBAL ID3D12CommandQueue         *gWin64RenderCommandQueue;
+RE_GLOBAL ID3D12CommandAllocator     *gWin64RenderCommandAllocators[WIN64_RENDER_FRAME_COUNT];
+RE_GLOBAL ID3D12GraphicsCommandList  *gWin64RenderCommandList;
+RE_GLOBAL IDXGISwapChain4            *gWin64RenderSwapChain;
+RE_GLOBAL ID3D12DescriptorHeap       *gWin64RenderRtvHeap;
+RE_GLOBAL UINT                        gWin64RenderRtvDescriptorSize;
+RE_GLOBAL ID3D12Resource             *gWin64RenderBackBuffers[WIN64_RENDER_FRAME_COUNT];
 
-global ID3D12Fence *gWin64RenderFence;
-global HANDLE        gWin64RenderFenceEvent;
-global ReUint64            gWin64RenderNextFenceValue = 1;
-global ReUint64            gWin64RenderFrameFenceValues[WIN64_RENDER_FRAME_COUNT];
+RE_GLOBAL ID3D12Fence *gWin64RenderFence;
+RE_GLOBAL HANDLE        gWin64RenderFenceEvent;
+RE_GLOBAL ReUint64            gWin64RenderNextFenceValue = 1;
+RE_GLOBAL ReUint64            gWin64RenderFrameFenceValues[WIN64_RENDER_FRAME_COUNT];
 
-global ReBool  gWin64RenderInitialized;
-global ReBool  gWin64RenderResizePending;
-global ReUint32 gWin64RenderPendingWidth;
-global ReUint32 gWin64RenderPendingHeight;
+RE_GLOBAL ReBool  gWin64RenderInitialized;
+RE_GLOBAL ReBool  gWin64RenderResizePending;
+RE_GLOBAL ReUint32 gWin64RenderPendingWidth;
+RE_GLOBAL ReUint32 gWin64RenderPendingHeight;
 
-internal void
+RE_INTERNAL void
 Win64_Render_ShowError( const wchar_t *message )
 {
     MessageBoxW( NULL, message, L"Hydra - Fatal Render Error", MB_OK | MB_ICONERROR );
 }
 
-internal void
+RE_INTERNAL void
 Win64_Render_LogAdapter( const DXGI_ADAPTER_DESC1 *desc, D3D12_RAYTRACING_TIER tier )
 {
     RE_LOG_INFO( "[Win64Render] adapter: %ls  DXR tier: %d", desc->Description, (int) tier );
 }
 
-internal D3D12_RESOURCE_BARRIER
+RE_INTERNAL D3D12_RESOURCE_BARRIER
 Win64_Render_TransitionBarrier( ID3D12Resource *resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after )
 {
     D3D12_RESOURCE_BARRIER barrier = {0};
@@ -71,7 +71,7 @@ Win64_Render_TransitionBarrier( ID3D12Resource *resource, D3D12_RESOURCE_STATES 
     return barrier;
 }
 
-internal D3D12_CPU_DESCRIPTOR_HANDLE
+RE_INTERNAL D3D12_CPU_DESCRIPTOR_HANDLE
 Win64_Render_RtvHandle( ReUint32 bufferIndex )
 {
     /* Struct-by-value COM methods take an extra out-pointer parameter in the C vtable headers
@@ -87,7 +87,7 @@ Win64_Render_RtvHandle( ReUint32 bufferIndex )
 /* Full GPU-idle wait - used for resize/shutdown, not the per-frame draw path (see
  * Win64_Render_WaitForFrame for the cheaper per-slot wait used there).
  */
-internal void
+RE_INTERNAL void
 Win64_Render_FlushGpu( void )
 {
     ReUint64 valueToWaitFor = gWin64RenderNextFenceValue;
@@ -101,7 +101,7 @@ Win64_Render_FlushGpu( void )
     }
 }
 
-internal void
+RE_INTERNAL void
 Win64_Render_WaitForFrame( ReUint32 bufferIndex )
 {
     ReUint64 targetValue = gWin64RenderFrameFenceValues[bufferIndex];
@@ -113,7 +113,7 @@ Win64_Render_WaitForFrame( ReUint32 bufferIndex )
     }
 }
 
-internal ReBool
+RE_INTERNAL ReBool
 Win64_Render_CreateFactory( void )
 {
     UINT flags = 0;
@@ -154,7 +154,7 @@ Win64_Render_CreateFactory( void )
  * also supports DXR Tier 1.0+ - this engine's rendering plan fundamentally depends on hardware
  * raytracing, so a machine without it is a real, immediate problem worth failing loudly on now.
  */
-internal ReBool
+RE_INTERNAL ReBool
 Win64_Render_SelectAdapterAndCreateDevice( void )
 {
     for ( UINT index = 0; ; index += 1 )
@@ -207,7 +207,7 @@ Win64_Render_SelectAdapterAndCreateDevice( void )
     return RE_False;
 }
 
-internal ReBool
+RE_INTERNAL ReBool
 Win64_Render_CreateCommandInfrastructure( void )
 {
     D3D12_COMMAND_QUEUE_DESC queueDesc = {0};
@@ -254,7 +254,7 @@ Win64_Render_CreateCommandInfrastructure( void )
     return RE_True;
 }
 
-internal void
+RE_INTERNAL void
 Win64_Render_RecreateRtvs( void )
 {
     D3D12_CPU_DESCRIPTOR_HANDLE handle;
@@ -272,7 +272,7 @@ Win64_Render_RecreateRtvs( void )
     }
 }
 
-internal ReBool
+RE_INTERNAL ReBool
 Win64_Render_CreateSwapchain( HWND window )
 {
     RECT clientRect;
@@ -335,7 +335,7 @@ Win64_Render_CreateSwapchain( HWND window )
     return RE_True;
 }
 
-internal ReBool
+RE_INTERNAL ReBool
 Win64_Render_CreateFence( void )
 {
     HRESULT hr = gWin64RenderDevice->lpVtbl->CreateFence(
@@ -389,7 +389,7 @@ Win64_Render_Draw( void )
     gWin64RenderCommandList->lpVtbl->OMSetRenderTargets( gWin64RenderCommandList, 1, &rtv, FALSE, NULL );
 
     /* Deliberately not black - black is indistinguishable from "nothing rendered" at a glance. */
-    local_persist const ReFloat32 clearColor[4] = {0.392f, 0.584f, 0.929f, 1.0f};
+    RE_LOCAL_PERSIST const ReFloat32 clearColor[4] = {0.392f, 0.584f, 0.929f, 1.0f};
     gWin64RenderCommandList->lpVtbl->ClearRenderTargetView( gWin64RenderCommandList, rtv, clearColor, 0, NULL );
 
     D3D12_RESOURCE_BARRIER toPresent = Win64_Render_TransitionBarrier(

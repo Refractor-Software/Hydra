@@ -85,10 +85,15 @@
 /* Three names for what C spells `static` in three unrelated ways. Which one is meant is
  * otherwise only recoverable from context, and getting it wrong while reading is easy:
  *
- *   internal      - file-local linkage; invisible outside this translation unit.
- *   global        - a variable at file scope; lives for the whole program.
- *   local_persist - a variable inside a function that survives between calls.
+ *   RE_INTERNAL      - file-local linkage; invisible outside this translation unit.
+ *   RE_GLOBAL        - a variable at file scope; lives for the whole program.
+ *   RE_LOCAL_PERSIST - a variable inside a function that survives between calls.
+ *
+ * Prefixed rather than spelled bare. `internal` and `global` are ordinary enough words to be
+ * plausible identifiers, and a macro by those names rewrites every one of them in every
+ * translation unit that includes this header - which already cost us once, when a struct member
+ * named `internal` silently became `static` and produced a syntax error nowhere near the cause.
  */
-#define internal      static
-#define global        static
-#define local_persist static
+#define RE_INTERNAL      static
+#define RE_GLOBAL        static
+#define RE_LOCAL_PERSIST static

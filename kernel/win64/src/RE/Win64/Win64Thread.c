@@ -29,7 +29,7 @@ RE_Thread_CurrentId( void )
 
 typedef HRESULT( WINAPI *ReWin64PfnSetThreadDescription ) (HANDLE, PCWSTR);
 
-internal void
+RE_INTERNAL void
 Win64_Thread_SetThreadDescription( HANDLE thread, const wchar_t *name )
 {
     HMODULE kernel32 = GetModuleHandleW( L"kernel32.dll" );
@@ -62,7 +62,7 @@ typedef struct ReWin64ThreadNameInfo
  * debugger attached to observe it can otherwise surface as a real (harmless) exception, so it's
  * wrapped in its own handler per Microsoft's documented idiom.
  */
-internal void
+RE_INTERNAL void
 Win64_Thread_RaiseLegacyNameException( DWORD threadId, const wchar_t *name )
 {
     char narrowName[64];

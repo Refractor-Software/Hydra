@@ -13,14 +13,14 @@
     knows VirtualAlloc, MEM_RESERVE, or the difference between a page and an allocation granule.
 */
 
-global ReUint64 gWin64VirtualMemoryPageSize;
-global ReUint64 gWin64VirtualMemoryAllocationGranularity;
+RE_GLOBAL ReUint64 gWin64VirtualMemoryPageSize;
+RE_GLOBAL ReUint64 gWin64VirtualMemoryAllocationGranularity;
 
 /* Queried once, lazily, because reservations can happen before any explicit kernel init runs -
  * command-line parsing is the current example. GetSystemInfo cannot fail and is cheap enough that
  * a guarded call on each entry point costs nothing measurable.
  */
-internal void
+RE_INTERNAL void
 Win64_VirtualMemory_EnsureGranularities( void )
 {
     if ( gWin64VirtualMemoryPageSize != 0 )
@@ -35,7 +35,7 @@ Win64_VirtualMemory_EnsureGranularities( void )
     gWin64VirtualMemoryAllocationGranularity = systemInfo.dwAllocationGranularity;
 }
 
-internal ReUint64
+RE_INTERNAL ReUint64
 Win64_VirtualMemory_AlignUp( ReUint64 value, ReUint64 alignment )
 {
     return ( value + ( alignment - 1 ) ) & ~( alignment - 1 );

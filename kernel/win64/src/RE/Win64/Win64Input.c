@@ -4,15 +4,15 @@
 
 #include "RE/Win64/Win64Input.h"
 
-global ReInputQueue gWin64InputQueue;
-global ReBool          gWin64KeyHeld[ReInputKey_Count];
+RE_GLOBAL ReInputQueue gWin64InputQueue;
+RE_GLOBAL ReBool          gWin64KeyHeld[ReInputKey_Count];
 
 /* Set 1 scan codes, indexed directly - covers everything that isn't ambiguous between its
  * extended and non-extended form. Ambiguous codes (ctrl, alt, the nav/numpad cluster, the
  * super keys) are deliberately left ReInputKey_Unknown here and resolved in
  * Win64_Input_KeyFromScanCode() instead, since they need the extended bit to disambiguate.
  */
-global const ReInputKey gWin64ScanCodeToKey[256] =
+RE_GLOBAL const ReInputKey gWin64ScanCodeToKey[256] =
 {
     [0x01] = ReInputKey_Escape,
     [0x02] = ReInputKey_1, [0x03] = ReInputKey_2, [0x04] = ReInputKey_3, [0x05] = ReInputKey_4,
@@ -51,7 +51,7 @@ global const ReInputKey gWin64ScanCodeToKey[256] =
  * (lParam bit 24) - control, alt, the nav cluster (arrows/home/end/etc, which share codes with
  * the numpad), and the super keys, which are only ever sent extended.
  */
-internal ReInputKey
+RE_INTERNAL ReInputKey
 Win64_Input_KeyFromScanCode( ReUint32 scanCode, ReBool isExtended )
 {
     if ( isExtended )
@@ -93,7 +93,7 @@ Win64_Input_KeyFromScanCode( ReUint32 scanCode, ReBool isExtended )
     return gWin64ScanCodeToKey[scanCode];
 }
 
-internal void
+RE_INTERNAL void
 Win64_Input_PushKeyEvent( ReInputKey key, ReBool isDown, ReBool isRepeat )
 {
     ReInputEvent event;
@@ -110,7 +110,7 @@ Win64_Input_PushKeyEvent( ReInputKey key, ReBool isDown, ReBool isRepeat )
     }
 }
 
-internal void
+RE_INTERNAL void
 Win64_Input_PushMouseButtonEvent( ReInputMouseButton button, ReBool isDown )
 {
     ReInputEvent event;

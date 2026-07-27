@@ -23,7 +23,7 @@ typedef struct ReSpinLockTestShared
     ReAtomicUint64 atomicCounter;
 } ReSpinLockTestShared;
 
-internal DWORD WINAPI
+RE_INTERNAL DWORD WINAPI
 SpinLock_TestWorker( LPVOID parameter )
 {
     ReSpinLockTestShared *shared = (ReSpinLockTestShared *) parameter;

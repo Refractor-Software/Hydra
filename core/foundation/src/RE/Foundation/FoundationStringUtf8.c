@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-internal ReBool
+RE_INTERNAL ReBool
 Utf8_IsContinuationByte( ReUint8 b )
 {
     return (ReBool) ((b & 0xC0) == 0x80);
@@ -16,7 +16,7 @@ Utf8_IsContinuationByte( ReUint8 b )
  * substitution) - the public RE_Utf8_Decode() discards that flag (it always substitutes and
  * proceeds regardless); RE_Utf8_IsValid() is the one caller that actually needs to know.
  */
-internal ReUint64
+RE_INTERNAL ReUint64
 Utf8_DecodeEx( const ReUint8 *bytes, ReUint64 remainingLength, ReUint32 *outCodepoint, ReBool *outWasValid )
 {
     assert( remainingLength > 0 );

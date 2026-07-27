@@ -11,7 +11,7 @@
  * own while its caller is holding a live buffer. Declaring the caller's arena as a conflict is
  * what guarantees it cannot be handed the same one.
  */
-internal ReArena *
+RE_INTERNAL ReArena *
 Scratch_TestHelper( ReArena *callerArena )
 {
     ReArena  *conflicts[1] = { callerArena };

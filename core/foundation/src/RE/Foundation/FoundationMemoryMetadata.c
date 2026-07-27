@@ -29,13 +29,13 @@ typedef struct ReMetadataChunk
     struct ReMetadataChunk *next;
 } ReMetadataChunk;
 
-global ReSpinLock       gMetadataLock;
-global ReMetadataChunk *gMetadataChunkHead;
-global ReUint64         gMetadataBytesReserved;
-global ReUint64         gMetadataBytesCommitted;
-global ReUint64         gMetadataBytesUsed;
-global ReUint64         gMetadataChunkCount;
-global ReBool           gMetadataLockInitialized;
+RE_GLOBAL ReSpinLock       gMetadataLock;
+RE_GLOBAL ReMetadataChunk *gMetadataChunkHead;
+RE_GLOBAL ReUint64         gMetadataBytesReserved;
+RE_GLOBAL ReUint64         gMetadataBytesCommitted;
+RE_GLOBAL ReUint64         gMetadataBytesUsed;
+RE_GLOBAL ReUint64         gMetadataChunkCount;
+RE_GLOBAL ReBool           gMetadataLockInitialized;
 
 /* The lock itself needs initialising before first use, and there is no init entry point to do it
  * in - metadata is used during bootstrap, before anything has had a chance to call an init.
@@ -44,7 +44,7 @@ global ReBool           gMetadataLockInitialized;
  * RE_SpinLock_Init would put it in. So the flag is really only documenting that the zero state is
  * deliberate rather than accidental.
  */
-internal void
+RE_INTERNAL void
 Metadata_EnsureLock( void )
 {
     if ( !gMetadataLockInitialized )
@@ -55,7 +55,7 @@ Metadata_EnsureLock( void )
 }
 
 /* Caller holds the lock. Returns 0 if the reservation or the first commit failed. */
-internal ReMetadataChunk *
+RE_INTERNAL ReMetadataChunk *
 Metadata_PushChunk( ReUint64 minimumSize )
 {
     ReUint64 reserveSize = RE_METADATA_CHUNK_RESERVE_SIZE;
@@ -102,7 +102,7 @@ Metadata_PushChunk( ReUint64 minimumSize )
 }
 
 /* Caller holds the lock. Returns 0 if the chunk cannot satisfy the request. */
-internal void *
+RE_INTERNAL void *
 Metadata_AllocFromChunk( ReMetadataChunk *chunk, ReUint64 size, ReUint64 alignment )
 {
     ReUint64 aligned = RE_Memory_AlignUp( (ReUint64) chunk->region.base + chunk->cursor, alignment );

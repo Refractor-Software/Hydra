@@ -10,7 +10,7 @@
 
 #include <RE/Foundation/FoundationPrimitiveTypes.h>
 
-internal ReBool
+RE_INTERNAL ReBool
 Win64_Crash_WriteDump( EXCEPTION_POINTERS *exceptionPointers, wchar_t *dumpPath, ReUint32 dumpPathCapacity )
 {
     wchar_t moduleDirectory[MAX_PATH];

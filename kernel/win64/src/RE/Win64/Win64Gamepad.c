@@ -18,7 +18,7 @@ typedef struct ReWin64GamepadState
     ReSint16 rightStickY;
 } ReWin64GamepadState;
 
-global ReWin64GamepadState gWin64GamepadState[RE_INPUT_GAMEPAD_COUNT];
+RE_GLOBAL ReWin64GamepadState gWin64GamepadState[RE_INPUT_GAMEPAD_COUNT];
 
 typedef struct ReWin64GamepadButtonMapping
 {
@@ -26,7 +26,7 @@ typedef struct ReWin64GamepadButtonMapping
     ReInputGamepadButton  key;
 } ReWin64GamepadButtonMapping;
 
-global const ReWin64GamepadButtonMapping gWin64GamepadButtonMap[] =
+RE_GLOBAL const ReWin64GamepadButtonMapping gWin64GamepadButtonMap[] =
 {
     { XINPUT_GAMEPAD_DPAD_UP,        ReInputGamepadButton_DpadUp },
     { XINPUT_GAMEPAD_DPAD_DOWN,      ReInputGamepadButton_DpadDown },
@@ -46,7 +46,7 @@ global const ReWin64GamepadButtonMapping gWin64GamepadButtonMap[] =
 
 #define WIN64_GAMEPAD_BUTTON_MAP_COUNT ( sizeof( gWin64GamepadButtonMap ) / sizeof( gWin64GamepadButtonMap[0] ) )
 
-internal ReFloat32
+RE_INTERNAL ReFloat32
 Win64_Gamepad_NormalizeStickAxis( ReSint16 value, ReSint16 deadzone )
 {
     ReSint32 magnitude = (value < 0) ? -(ReSint32) value : (ReSint32) value;
@@ -64,7 +64,7 @@ Win64_Gamepad_NormalizeStickAxis( ReSint16 value, ReSint16 deadzone )
     return normalized;
 }
 
-internal ReFloat32
+RE_INTERNAL ReFloat32
 Win64_Gamepad_NormalizeTriggerAxis( ReUint8 value, ReUint8 threshold )
 {
     if ( value < threshold )
@@ -75,7 +75,7 @@ Win64_Gamepad_NormalizeTriggerAxis( ReUint8 value, ReUint8 threshold )
     return (ReFloat32) value / 255.0f;
 }
 
-internal void
+RE_INTERNAL void
 Win64_Gamepad_PushButtonEvent( ReInputQueue *queue, ReUint8 gamepadIndex, ReInputGamepadButton button, ReBool isDown )
 {
     ReInputEvent event;
@@ -87,7 +87,7 @@ Win64_Gamepad_PushButtonEvent( ReInputQueue *queue, ReUint8 gamepadIndex, ReInpu
     RE_Input_PushEvent( queue, event );
 }
 
-internal void
+RE_INTERNAL void
 Win64_Gamepad_PushAxisIfChanged( ReInputQueue *queue, ReUint8 gamepadIndex, ReInputGamepadAxis axis,
     ReFloat32 previous, ReFloat32 current )
 {
@@ -105,7 +105,7 @@ Win64_Gamepad_PushAxisIfChanged( ReInputQueue *queue, ReUint8 gamepadIndex, ReIn
     RE_Input_PushEvent( queue, event );
 }
 
-internal void
+RE_INTERNAL void
 Win64_Gamepad_HandleDisconnect( ReInputQueue *queue, ReUint8 gamepadIndex, ReWin64GamepadState *state )
 {
     for ( ReUint32 buttonIndex = 0; buttonIndex < WIN64_GAMEPAD_BUTTON_MAP_COUNT; buttonIndex += 1 )

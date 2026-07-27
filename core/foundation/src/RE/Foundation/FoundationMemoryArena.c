@@ -20,7 +20,7 @@
 #define RE_ARENA_POISON_ENABLED 0
 #endif
 
-internal void
+RE_INTERNAL void
 Arena_Poison( ReArena *arena, ReUint64 from, ReUint64 to )
 {
 #if RE_ARENA_POISON_ENABLED
@@ -41,7 +41,7 @@ Arena_Poison( ReArena *arena, ReUint64 from, ReUint64 to )
 }
 
 /* Makes sure [0, requiredEnd) is backed. Fixed arenas are fully backed by definition. */
-internal ReBool
+RE_INTERNAL ReBool
 Arena_EnsureCommitted( ReArena *arena, ReUint64 requiredEnd )
 {
     if ( requiredEnd <= arena->committed )
@@ -336,19 +336,19 @@ RE_Arena_HighWater( const ReArena *arena )
     return arena->highWater;
 }
 
-internal void *
+RE_INTERNAL void *
 Arena_AllocatorAlloc( void *context, ReUint64 size, ReUint64 alignment )
 {
     return RE_Arena_Alloc( (ReArena *) context, size, alignment );
 }
 
-internal void *
+RE_INTERNAL void *
 Arena_AllocatorRealloc( void *context, void *block, ReUint64 oldSize, ReUint64 newSize, ReUint64 alignment )
 {
     return RE_Arena_Realloc( (ReArena *) context, block, oldSize, newSize, alignment );
 }
 
-internal void
+RE_INTERNAL void
 Arena_AllocatorFree( void *context, void *block, ReUint64 oldSize )
 {
     RE_Arena_Free( (ReArena *) context, block, oldSize );
@@ -357,7 +357,7 @@ Arena_AllocatorFree( void *context, void *block, ReUint64 oldSize )
 /* An arena hands back exactly the bytes asked for - there are no size classes to round up to, so
  * there is never anything extra for a container to claim.
  */
-internal ReUint64
+RE_INTERNAL ReUint64
 Arena_AllocatorQuantize( void *context, ReUint64 size, ReUint64 alignment )
 {
     (void) context;

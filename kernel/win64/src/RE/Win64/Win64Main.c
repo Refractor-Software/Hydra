@@ -26,10 +26,10 @@
 /* Small enough to keep inline for now - split into its own win64/time module if it grows beyond
  * a plain QueryPerformanceCounter delta.
  */
-global ReSint64 gWin64PerfFrequency;
-global ReSint64 gWin64PerfCounterLast;
+RE_GLOBAL ReSint64 gWin64PerfFrequency;
+RE_GLOBAL ReSint64 gWin64PerfCounterLast;
 
-internal void
+RE_INTERNAL void
 Win64_Time_Init( void )
 {
     LARGE_INTEGER frequency;
@@ -41,7 +41,7 @@ Win64_Time_Init( void )
     gWin64PerfCounterLast = counter.QuadPart;
 }
 
-internal ReFloat32
+RE_INTERNAL ReFloat32
 Win64_Time_Tick( void )
 {
     LARGE_INTEGER counter;
@@ -53,7 +53,7 @@ Win64_Time_Tick( void )
     return deltaTime;
 }
 
-internal LRESULT CALLBACK
+RE_INTERNAL LRESULT CALLBACK
 Win64_WindowProc( HWND window, UINT message, WPARAM wParam, LPARAM lParam )
 {
     Win64_Input_HandleMessage( message, wParam, lParam );
@@ -84,7 +84,7 @@ Win64_WindowProc( HWND window, UINT message, WPARAM wParam, LPARAM lParam )
 /* TEMPORARY: makes the input queue's per-tick event count visible without a real debug-output
  * path yet. Remove once one exists.
  */
-internal void
+RE_INTERNAL void
 Win64_Debug_UpdateWindowTitle( HWND window, ReFloat32 deltaTime )
 {
     ReInputQueue *queue = Win64_Input_GetQueue();
@@ -98,7 +98,7 @@ Win64_Debug_UpdateWindowTitle( HWND window, ReFloat32 deltaTime )
     SetWindowTextW( window, title );
 }
 
-internal HWND
+RE_INTERNAL HWND
 Win64_CreateWindow( HINSTANCE instance )
 {
     WNDCLASSEXW windowClass = {0};

@@ -435,7 +435,9 @@ static __always_inline __init __printf(4, 5) void * __must_check action(enum mag
 
 ---
 
-For our own code, in a lot of cases many of these are irrelevant, but if for any reason they were to become relevant, this is what we follow. We also typically don't use these exact names. For example instead of `__always_inline` we have `RE_ALWAYS_INLINE_HINT`, and instead of `static` we have separate `internal`/`global`/`local_persist` that are each defined to `static` but in context make code much easier to read/understand.
+For our own code, in a lot of cases many of these are irrelevant, but if for any reason they were to become relevant, this is what we follow. We also typically don't use these exact names. For example instead of `__always_inline` we have `RE_ALWAYS_INLINE_HINT`, and instead of `static` we have separate `RE_INTERNAL`/`RE_GLOBAL`/`RE_LOCAL_PERSIST` that are each defined to `static` but in context make code much easier to read/understand.
+
+These carry the `RE_` prefix for the same reason every other macro does. Unprefixed, `internal` and `global` are ordinary enough English words to be plausible identifiers, and a macro by those names silently rewrites every occurrence in every translation unit that includes the header - including struct members and parameters that had nothing to do with storage class.
 
 That is not exhaustive, there are many other deviations within our own code and naming if that wasn't obvious enough, but you get the point.
 
