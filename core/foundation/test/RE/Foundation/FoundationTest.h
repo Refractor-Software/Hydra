@@ -86,3 +86,5 @@ void RE_Test_MemoryPool( void );
 void RE_Test_MemoryHandlePool( void );
 void RE_Test_MemoryFrame( void );
 void RE_Test_MemoryRing( void );
+void RE_Test_MemorySizeClass( void );
+void RE_Test_MemoryHeap( void );

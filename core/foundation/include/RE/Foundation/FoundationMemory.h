@@ -25,9 +25,11 @@
 #include <RE/Foundation/FoundationMemoryArena.h>
 #include <RE/Foundation/FoundationMemoryFrame.h>
 #include <RE/Foundation/FoundationMemoryHandlePool.h>
+#include <RE/Foundation/FoundationMemoryHeap.h>
 #include <RE/Foundation/FoundationMemoryMetadata.h>
 #include <RE/Foundation/FoundationMemoryPool.h>
 #include <RE/Foundation/FoundationMemoryRing.h>
 #include <RE/Foundation/FoundationMemoryScratch.h>
+#include <RE/Foundation/FoundationMemorySizeClass.h>
 #include <RE/Foundation/FoundationMemoryUtility.h>
 #include <RE/Foundation/FoundationVirtualMemory.h>
