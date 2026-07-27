@@ -72,6 +72,7 @@ main( void )
     RE_Test_Run( "MemorySizeClass", RE_Test_MemorySizeClass );
     RE_Test_Run( "MemoryHeap", RE_Test_MemoryHeap );
     RE_Test_Run( "MemoryThreadCache", RE_Test_MemoryThreadCache );
+    RE_Test_Run( "MemoryDecorator", RE_Test_MemoryDecorator );
 
     return (int) RE_Test_Summary();
 }

@@ -19,8 +19,9 @@ target_include_directories(com.refractor.core.foundation.test PRIVATE ${CMAKE_SO
 
 target_sources(com.refractor.core.foundation.test PRIVATE
     ${CMAKE_SOURCE_DIR}/kernel/win64/src/RE/Win64/Win64VirtualMemory.c
-    ${CMAKE_SOURCE_DIR}/kernel/win64/src/RE/Win64/Win64Thread.c)
+    ${CMAKE_SOURCE_DIR}/kernel/win64/src/RE/Win64/Win64Thread.c
+    ${CMAKE_SOURCE_DIR}/kernel/win64/src/RE/Win64/Win64Debug.c)
 
-target_link_libraries(com.refractor.core.foundation.test PRIVATE com.refractor.core.foundation)
+target_link_libraries(com.refractor.core.foundation.test PRIVATE com.refractor.core.foundation dbghelp)
 
 add_test(NAME com.refractor.core.foundation.test COMMAND com.refractor.core.foundation.test)

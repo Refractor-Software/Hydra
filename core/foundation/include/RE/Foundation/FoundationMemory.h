@@ -23,6 +23,7 @@
 
 #include <RE/Foundation/FoundationMemoryAllocator.h>
 #include <RE/Foundation/FoundationMemoryArena.h>
+#include <RE/Foundation/FoundationMemoryDecorator.h>
 #include <RE/Foundation/FoundationMemoryFrame.h>
 #include <RE/Foundation/FoundationMemoryHandlePool.h>
 #include <RE/Foundation/FoundationMemoryHeap.h>

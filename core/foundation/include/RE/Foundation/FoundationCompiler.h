@@ -4,6 +4,13 @@
 
 #pragma once
 
+/* Pulled in here so that RE_BUILD and its level names are defined anywhere this is, which is
+ * everywhere. Without that, a header testing `RE_BUILD < RE_BUILD_SHIPPING` without remembering
+ * to include FoundationBuild.h compares two undefined identifiers - both zero - and silently
+ * takes the wrong branch. That is not a hypothetical; it happened.
+ */
+#include <RE/Foundation/FoundationBuild.h>
+
 /*
     FoundationCompiler.h
 
