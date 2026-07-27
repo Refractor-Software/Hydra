@@ -41,7 +41,7 @@ RE_Arena_Alloc( ReArena *a, ReUint64 size, ReUint64 alignment )
 
     a->offset += padding + size;
 
-    return( void * ) aligned;
+    return (void *) aligned;
 }
 
 void

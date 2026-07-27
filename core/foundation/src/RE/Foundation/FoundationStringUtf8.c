@@ -9,7 +9,7 @@
 internal ReBool
 Utf8_IsContinuationByte( ReUint8 b )
 {
-    return( ReBool ) ((b & 0xC0) == 0x80);
+    return (ReBool) ((b & 0xC0) == 0x80);
 }
 
 /* Does the real decode work, additionally reporting whether the sequence was well-formed (no

@@ -45,6 +45,20 @@
 #define RE_ALWAYS_INLINE_HINT inline
 #endif
 
+/* Alignment of a type, as an integer constant expression.
+ *
+ * C11 spells this _Alignof and C++11 spells it alignof; <stdalign.h> would give C the alignof
+ * spelling too, but pulling in a standard header for one keyword is exactly the dependency we
+ * would rather not have. MSVC has understood __alignof since long before either standard.
+ */
+#if RE_LANGUAGE_CPP
+#define RE_ALIGNOF( T ) alignof( T )
+#elif defined( _MSC_VER )
+#define RE_ALIGNOF( T ) __alignof( T )
+#else
+#define RE_ALIGNOF( T ) _Alignof( T )
+#endif
+
 /* Three names for what C spells `static` in three unrelated ways. Which one is meant is
  * otherwise only recoverable from context, and getting it wrong while reading is easy:
  *

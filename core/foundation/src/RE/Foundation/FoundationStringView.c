@@ -32,7 +32,7 @@ RE_StringView_FromBytes( const ReUint8 *data, ReUint64 length )
 ReBool
 RE_StringView_IsEmpty( ReStringView sv )
 {
-    return( ReBool ) (sv.length == 0);
+    return (ReBool) (sv.length == 0);
 }
 
 ReBool
@@ -43,7 +43,7 @@ RE_StringView_Equals( ReStringView a, ReStringView b )
         return RE_False;
     }
 
-    return( ReBool ) (RE_Memory_Compare( a.data, b.data, a.length ) == 0);
+    return (ReBool) (RE_Memory_Compare( a.data, b.data, a.length ) == 0);
 }
 
 ReSint32
@@ -71,7 +71,7 @@ RE_StringView_StartsWith( ReStringView sv, ReStringView prefix )
         return RE_False;
     }
 
-    return( ReBool ) (RE_Memory_Compare( sv.data, prefix.data, prefix.length ) == 0);
+    return (ReBool) (RE_Memory_Compare( sv.data, prefix.data, prefix.length ) == 0);
 }
 
 ReBool
@@ -82,7 +82,7 @@ RE_StringView_EndsWith( ReStringView sv, ReStringView suffix )
         return RE_False;
     }
 
-    return( ReBool ) (RE_Memory_Compare( sv.data + (sv.length - suffix.length), suffix.data, suffix.length ) == 0);
+    return (ReBool) (RE_Memory_Compare( sv.data + (sv.length - suffix.length), suffix.data, suffix.length ) == 0);
 }
 
 ReStringView

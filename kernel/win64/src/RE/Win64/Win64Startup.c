@@ -26,7 +26,7 @@ Win64_Startup_CpuHasAvx( void )
      */
     unsigned __int64 xcr0 = _xgetbv( 0 );
 
-    return( ReBool ) ((xcr0 & 0x6) == 0x6);
+    return (ReBool) ((xcr0 & 0x6) == 0x6);
 }
 
 #if RE_TARGET_ISA_AVX2
@@ -43,7 +43,7 @@ Win64_Startup_CpuHasAvx2( void )
     int extInfo[4];
     __cpuidex( extInfo, 7, 0 );
 
-    return( ReBool ) ((extInfo[1] & (1 << 5)) != 0);
+    return (ReBool) ((extInfo[1] & (1 << 5)) != 0);
 }
 #endif
 

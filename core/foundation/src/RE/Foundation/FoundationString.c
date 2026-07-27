@@ -113,5 +113,5 @@ RE_String_AsView( const ReString *s )
 const char *
 RE_String_AsCStr( const ReString *s )
 {
-    return( const char * ) s->data;
+    return (const char *) s->data;
 }

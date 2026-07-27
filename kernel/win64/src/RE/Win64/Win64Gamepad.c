@@ -72,7 +72,7 @@ Win64_Gamepad_NormalizeTriggerAxis( ReUint8 value, ReUint8 threshold )
         return 0.0f;
     }
 
-    return( ReFloat32 ) value / 255.0f;
+    return (ReFloat32) value / 255.0f;
 }
 
 internal void

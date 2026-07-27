@@ -51,7 +51,7 @@ RE_Memory_Compare( const void *a, const void *b, ReUint64 size )
     {
         if ( ab[i] != bb[i] )
         {
-            return( ReSint32 ) ab[i] - (ReSint32) bb[i];
+            return (ReSint32) ab[i] - (ReSint32) bb[i];
         }
     }
 
@@ -65,5 +65,5 @@ RE_Memory_Compare( const void *a, const void *b, ReUint64 size )
 internal inline ReUint64
 RE_Memory_AlignUp( ReUint64 value, ReUint64 alignment )
 {
-    return( value + (alignment - 1) ) & ~(alignment - 1);
+    return ( value + ( alignment - 1 ) ) & ~( alignment - 1 );
 }
