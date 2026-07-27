@@ -32,3 +32,19 @@ void RE_Thread_Yield( void );
  * for the ownership checks it exists for and would not be fine for anything persistent.
  */
 ReUint64 RE_Thread_CurrentId( void );
+
+typedef void ( *ReThreadExitFn )( void *userData );
+
+/* Arranges for callback( userData ) to run on this thread as it exits.
+ *
+ * Exists so the memory system can tear down a thread's cache without every thread having to
+ * remember to say so. A thread that allocates once and exits should not leak its cached bins, and
+ * requiring an explicit shutdown call makes that a matter of discipline rather than of design.
+ *
+ * One registration per thread; a second replaces the first. Returns RE_False if the platform
+ * could not arrange it, in which case cleanup falls back to the explicit call.
+ *
+ * @warning The callback runs during thread teardown, where the set of things that are safe to do
+ *          is narrow. Touch only memory the callback owns.
+ */
+ReBool RE_Thread_RegisterExitCallback( ReThreadExitFn callback, void *userData );

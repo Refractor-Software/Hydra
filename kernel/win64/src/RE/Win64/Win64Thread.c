@@ -4,6 +4,7 @@
 
 #include "RE/Win64/Win64Thread.h"
 
+#include <RE/Foundation/FoundationSpinLock.h>
 #include <RE/Foundation/FoundationThread.h>
 
 /* Windows side of the RE_Thread_* boundary declared in FoundationThread.h. */
@@ -25,6 +26,66 @@ ReUint64
 RE_Thread_CurrentId( void )
 {
     return (ReUint64) GetCurrentThreadId();
+}
+
+/*
+    Thread-exit notification, via fiber-local storage.
+
+    FLS rather than TLS because only FLS takes a destructor callback. Windows runs it as the
+    thread exits, for every thread that ever set a value - including threads the engine did not
+    create, which is exactly the case an explicit shutdown call would miss.
+
+    One index for the whole process, allocated on first use. Only one subsystem needs this, so
+    the callback is a single global rather than a table.
+*/
+
+RE_GLOBAL DWORD          gWin64ThreadExitFlsIndex = FLS_OUT_OF_INDEXES;
+RE_GLOBAL ReThreadExitFn gWin64ThreadExitCallback;
+RE_GLOBAL ReSpinLock     gWin64ThreadExitLock;
+
+RE_INTERNAL void WINAPI
+Win64_Thread_OnFlsDestroy( PVOID userData )
+{
+    if ( gWin64ThreadExitCallback && userData )
+    {
+        gWin64ThreadExitCallback( userData );
+    }
+}
+
+ReBool
+RE_Thread_RegisterExitCallback( ReThreadExitFn callback, void *userData )
+{
+    if ( !callback || !userData )
+    {
+        return RE_False;
+    }
+
+    if ( gWin64ThreadExitFlsIndex == FLS_OUT_OF_INDEXES )
+    {
+        RE_SpinLock_Acquire( &gWin64ThreadExitLock );
+
+        /* Re-checked under the lock: two threads can both find it unallocated, and allocating
+         * twice would leak an index and leave one of them writing to a slot nothing reads.
+         */
+        if ( gWin64ThreadExitFlsIndex == FLS_OUT_OF_INDEXES )
+        {
+            gWin64ThreadExitCallback = callback;
+
+            DWORD index = FlsAlloc( Win64_Thread_OnFlsDestroy );
+            if ( index == FLS_OUT_OF_INDEXES )
+            {
+                RE_SpinLock_Release( &gWin64ThreadExitLock );
+
+                return RE_False;
+            }
+
+            gWin64ThreadExitFlsIndex = index;
+        }
+
+        RE_SpinLock_Release( &gWin64ThreadExitLock );
+    }
+
+    return (ReBool) FlsSetValue( gWin64ThreadExitFlsIndex, userData );
 }
 
 typedef HRESULT( WINAPI *ReWin64PfnSetThreadDescription ) (HANDLE, PCWSTR);

@@ -6,9 +6,12 @@
 
 #include <assert.h>
 
+#include "RE/Foundation/FoundationMemoryDepot.h"
 #include "RE/Foundation/FoundationMemoryHeapInternal.h"
+#include "RE/Foundation/FoundationMemoryThreadCacheInternal.h"
 
 #include <RE/Foundation/FoundationMemoryMetadata.h>
+#include <RE/Foundation/FoundationMemoryThreadCache.h>
 #include <RE/Foundation/FoundationMemoryUtility.h>
 #include <RE/Foundation/FoundationSpinLock.h>
 #include <RE/Foundation/FoundationVirtualMemory.h>
@@ -373,15 +376,14 @@ Heap_SmallAlloc( ReUint32 classIndex )
     return block;
 }
 
-RE_INTERNAL void
-Heap_SmallFree( ReHeapSpan *span, void *block )
+/* Caller holds the class lock. Returns the span if it emptied and should be released, else 0.
+ *
+ * Split out from RE_Heap_Free so a whole magazine can be returned under one lock acquisition
+ * rather than one per bin.
+ */
+RE_INTERNAL ReHeapSpan *
+Heap_SmallFreeLocked( ReHeapClassState *state, ReHeapSpan *span, void *block, ReUint64 binSize )
 {
-    ReUint32          classIndex = span->classIndex;
-    ReHeapClassState *state      = &gHeapClasses[classIndex].state;
-    ReUint64          binSize    = RE_HeapSizeClass_Size( classIndex );
-
-    RE_SpinLock_Acquire( &state->lock );
-
     ReUint64 offset = (ReUint64) ( (ReUint8 *) block - span->base );
 
     assert( offset % binSize == 0 && "pointer is not on a bin boundary" );
@@ -404,13 +406,27 @@ Heap_SmallFree( ReHeapSpan *span, void *block )
         Heap_PartialPush( state, span );
     }
 
-    ReBool spanIsEmpty = (ReBool) ( span->binsInUse == 0 );
-
-    if ( spanIsEmpty )
+    if ( span->binsInUse == 0 )
     {
         Heap_PartialRemove( state, span );
         state->spansCommitted -= 1;
+
+        return span;
     }
+
+    return 0;
+}
+
+RE_INTERNAL void
+Heap_SmallFree( ReHeapSpan *span, void *block )
+{
+    ReUint32          classIndex = span->classIndex;
+    ReHeapClassState *state      = &gHeapClasses[classIndex].state;
+    ReUint64          binSize    = RE_HeapSizeClass_Size( classIndex );
+
+    RE_SpinLock_Acquire( &state->lock );
+
+    ReHeapSpan *emptied = Heap_SmallFreeLocked( state, span, block, binSize );
 
     RE_SpinLock_Release( &state->lock );
 
@@ -418,9 +434,128 @@ Heap_SmallFree( ReHeapSpan *span, void *block )
      * span for reuse rather than handing it back to the OS, so a workload oscillating around a
      * span boundary does not pay a syscall each way.
      */
-    if ( spanIsEmpty )
+    if ( emptied )
     {
-        RE_HeapMap_ReleaseSpan( span );
+        RE_HeapMap_ReleaseSpan( emptied );
+    }
+}
+
+ReUint32
+RE_HeapInternal_MagazineCapacity( ReUint32 classIndex )
+{
+    ReUint64 binSize  = RE_HeapSizeClass_Size( classIndex );
+    ReUint64 capacity = RE_MAGAZINE_MAX_BYTES / binSize;
+
+    if ( capacity > RE_MAGAZINE_MAX_COUNT )
+    {
+        capacity = RE_MAGAZINE_MAX_COUNT;
+    }
+
+    if ( capacity == 0 )
+    {
+        capacity = 1;
+    }
+
+    return (ReUint32) capacity;
+}
+
+ReUint32
+RE_HeapInternal_AllocBatch( ReUint32 classIndex, void **outBlocks, ReUint32 maxCount )
+{
+    ReHeapClassState *state   = &gHeapClasses[classIndex].state;
+    ReUint64          binSize = RE_HeapSizeClass_Size( classIndex );
+
+    ReUint32 obtained = 0;
+
+    while ( obtained < maxCount )
+    {
+        RE_SpinLock_Acquire( &state->lock );
+
+        ReHeapSpan *span = state->partialSpans;
+
+        if ( !span )
+        {
+            RE_SpinLock_Release( &state->lock );
+
+            /* Acquired outside the class lock: the map takes its own, and holding both in one
+             * order here and the other order elsewhere is how deadlocks get built.
+             */
+            span = RE_HeapMap_AcquireSpan( classIndex );
+
+            if ( !span )
+            {
+                break;
+            }
+
+            RE_SpinLock_Acquire( &state->lock );
+
+            Heap_PartialPush( state, span );
+            state->spansCommitted += 1;
+        }
+
+        /* Drain this span for as much of the batch as it can serve, so one lock acquisition pays
+         * for many bins rather than one.
+         */
+        while ( obtained < maxCount && span->freeRun != RE_HEAP_BIN_NONE )
+        {
+            outBlocks[obtained] = Heap_TakeBin( span, binSize );
+            obtained += 1;
+            state->binsInUse += 1;
+        }
+
+        if ( span->freeRun == RE_HEAP_BIN_NONE )
+        {
+            Heap_PartialRemove( state, span );
+        }
+
+        RE_SpinLock_Release( &state->lock );
+    }
+
+    return obtained;
+}
+
+void
+RE_HeapInternal_FreeChain( ReUint32 classIndex, ReMagazineNode *head )
+{
+    ReHeapClassState *state   = &gHeapClasses[classIndex].state;
+    ReUint64          binSize = RE_HeapSizeClass_Size( classIndex );
+
+    /* Spans that empty are collected and released after the lock is dropped, for the same
+     * ordering reason as everywhere else.
+     */
+    ReHeapSpan *emptied[RE_MAGAZINE_MAX_COUNT];
+    ReUint32    emptiedCount = 0;
+
+    RE_SpinLock_Acquire( &state->lock );
+
+    while ( head )
+    {
+        /* The next link has to be read before the block is freed - freeing overwrites the first
+         * bytes of the bin with the free-run node, which is the same memory the link lives in.
+         */
+        ReMagazineNode *next = head->next;
+
+        ReHeapSpan *span = RE_HeapMap_SpanOf( head );
+
+        assert( span && span->canary == RE_HEAP_SPAN_CANARY );
+        assert( span->classIndex == classIndex && "magazine holds a bin from another class" );
+
+        ReHeapSpan *justEmptied = Heap_SmallFreeLocked( state, span, head, binSize );
+
+        if ( justEmptied && emptiedCount < RE_MAGAZINE_MAX_COUNT )
+        {
+            emptied[emptiedCount] = justEmptied;
+            emptiedCount += 1;
+        }
+
+        head = next;
+    }
+
+    RE_SpinLock_Release( &state->lock );
+
+    for ( ReUint32 i = 0; i < emptiedCount; i += 1 )
+    {
+        RE_HeapMap_ReleaseSpan( emptied[i] );
     }
 }
 
@@ -471,6 +606,11 @@ RE_Heap_Init( void )
         return RE_False;
     }
 
+    if ( !RE_Depot_Init() )
+    {
+        return RE_False;
+    }
+
     gHeapInitialized = RE_True;
 
     return RE_True;
@@ -483,6 +623,12 @@ RE_Heap_Shutdown( void )
     {
         return;
     }
+
+    /* Cached bins have to go back to their spans before anything is released, or the spans they
+     * belong to would still look occupied.
+     */
+    RE_Memory_ThreadShutdown();
+    RE_Memory_ThreadCacheTrim();
 
     RE_SpinLock_Acquire( &gHeapLargeLock );
 
@@ -537,7 +683,16 @@ RE_Heap_Alloc( ReUint64 size, ReUint64 alignment )
 
     if ( classIndex != RE_HEAP_CLASS_LARGE )
     {
-        void *block = Heap_SmallAlloc( classIndex );
+        /* Through the thread cache first, which serves the overwhelming majority of calls with no
+         * lock and no atomic. It falls back to the batched slow path internally, and returns 0
+         * only when there is no usable cache at all.
+         */
+        void *block = RE_ThreadCache_Alloc( classIndex );
+
+        if ( !block )
+        {
+            block = Heap_SmallAlloc( classIndex );
+        }
 
         if ( block )
         {
@@ -569,7 +724,14 @@ RE_Heap_Free( void *block )
     {
         assert( span->canary == RE_HEAP_SPAN_CANARY && "span metadata corrupted" );
 
-        Heap_SmallFree( span, block );
+        /* Parked in this thread's cache rather than returned to the span, so the next allocation
+         * of this class on this thread is a pop rather than a lock. Freeing to a thread other
+         * than the one that allocated is fine - the depot is what moves it back.
+         */
+        if ( !RE_ThreadCache_Free( span->classIndex, block ) )
+        {
+            Heap_SmallFree( span, block );
+        }
 
         return;
     }
@@ -742,9 +904,14 @@ RE_Heap_Realloc( void *block, ReUint64 newSize, ReUint64 alignment )
 void
 RE_Heap_Trim( void )
 {
-    /* Spans that emptied were already handed back to the map, which parks them for reuse. There
-     * is nothing further to release here yet; decommitting parked spans is the next step, and
-     * wants hysteresis so a workload oscillating around a span boundary does not thrash.
+    /* Asks every thread to give back its cached bins and empties the depot. Costs one atomic;
+     * threads notice at their own next checkpoint rather than being interrupted.
+     */
+    RE_Memory_ThreadCacheTrim();
+
+    /* Spans that empty as a result are handed back to the map, which parks them for reuse.
+     * Decommitting those parked spans is the next step and wants hysteresis, or a workload
+     * oscillating around a span boundary would thrash on page faults.
      */
 }
 

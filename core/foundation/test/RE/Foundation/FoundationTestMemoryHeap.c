@@ -154,31 +154,61 @@ RE_Test_MemoryHeap( void )
         RE_Heap_Free( second );
     }
 
-    /* --- a span emptied and re-filled hands out the same memory again --- */
+    /* --- an emptied span is given back, and reused rather than replaced --- */
     {
-        enum { Count = 64 };
+        RE_Heap_Trim();
+
+        ReHeapStats before = RE_Heap_GetStats();
+
+        enum { Count = 600 }; /* several spans' worth of a 128-byte class */
 
         void *blocks[Count];
 
         for ( ReUint32 i = 0; i < Count; i += 1 )
         {
             blocks[i] = RE_Heap_Alloc( 128, 16 );
+            RE_TEST_CHECK_NOT_NULL( blocks[i] );
         }
 
-        void *firstAddress = blocks[0];
+        ReHeapStats during = RE_Heap_GetStats();
+        RE_TEST_CHECK( during.smallSpansCommitted > before.smallSpansCommitted );
 
         for ( ReUint32 i = 0; i < Count; i += 1 )
         {
             RE_Heap_Free( blocks[i] );
         }
 
-        /* The span went empty and was released to the map, which parks rather than unmaps it -
-         * so the next allocation of that class should land in the same place.
+        /* Freeing alone does not empty the spans any more - the bins are parked in this thread's
+         * cache, which is the entire point of that tier. A trim is what pushes them back.
          */
-        void *reused = RE_Heap_Alloc( 128, 16 );
-        RE_TEST_CHECK( reused == firstAddress );
+        RE_Heap_Trim();
 
-        RE_Heap_Free( reused );
+        ReHeapStats after = RE_Heap_GetStats();
+
+        RE_TEST_CHECK_EQ_UINT( after.smallSpansCommitted, before.smallSpansCommitted );
+        RE_TEST_CHECK_EQ_UINT( after.smallBytesInUse, before.smallBytesInUse );
+
+        /* Allocating the same thing again must not have to reserve more address space: the map
+         * parks released spans for reuse rather than handing them back to the OS.
+         *
+         * Checked by reserved bytes rather than by address, because a released span is just
+         * memory - the map pools it by block count and may legitimately hand it to a different
+         * size class next.
+         */
+        for ( ReUint32 i = 0; i < Count; i += 1 )
+        {
+            blocks[i] = RE_Heap_Alloc( 128, 16 );
+        }
+
+        ReHeapStats reused = RE_Heap_GetStats();
+        RE_TEST_CHECK_EQ_UINT( reused.mapReservedBytes, during.mapReservedBytes );
+
+        for ( ReUint32 i = 0; i < Count; i += 1 )
+        {
+            RE_Heap_Free( blocks[i] );
+        }
+
+        RE_Heap_Trim();
     }
 
     /* --- large allocations --- */
@@ -341,8 +371,13 @@ RE_Test_MemoryHeap( void )
         }
     }
 
-    /* --- after everything is freed, nothing should still be counted as in use --- */
+    /* --- after everything is freed and trimmed, nothing should still be counted as in use --- */
     {
+        /* Trim first: freed bins sit in per-thread caches until asked for, so the heap still
+         * counts them as handed out. Anything left after this is a genuine leak.
+         */
+        RE_Heap_Trim();
+
         ReHeapStats stats = RE_Heap_GetStats();
 
         RE_TEST_CHECK_EQ_UINT( stats.largeCount, 0 );

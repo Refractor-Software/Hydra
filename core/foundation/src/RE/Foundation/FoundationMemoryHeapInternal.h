@@ -91,6 +91,50 @@ typedef struct ReHeapSpan
     ReUint32 canary;
 } ReHeapSpan;
 
+/*
+    Magazines: short lists of free bins cached by one thread and transferred as a unit.
+
+    The links live inside the free bins, so a magazine costs no memory of its own. That puts a
+    hard ceiling on the node: it must fit the smallest bin, which is 8 bytes.
+
+    Which is why the node is only a pointer, with no count beside it. A magazine's length is
+    implied by its class instead - a full magazine always holds exactly the capacity for that
+    class - so nothing needs to travel alongside the head. That also sidesteps packing a count
+    into the spare bits of a pointer, which works until it meets an architecture that uses the
+    high bits for tagging.
+*/
+typedef struct ReMagazineNode
+{
+    struct ReMagazineNode *next;
+} ReMagazineNode;
+
+typedef char ReMagazineNodeFitsSmallestBin[( sizeof( ReMagazineNode ) <= RE_HEAP_MIN_BIN_SIZE ) ? 1 : -1];
+
+/* Bounded by count *and* by bytes. A count-only bound would park 64 bins of the largest class -
+ * a megabyte - per class per thread, which across every class and every worker is an enormous
+ * idle footprint.
+ */
+#define RE_MAGAZINE_MAX_COUNT 64
+#define RE_MAGAZINE_MAX_BYTES ( 32 * 1024 )
+
+/* Bins taken per lock acquisition on the slow path. One lock now pays for this many allocations,
+ * which cuts how *often* the lock is taken rather than how long it is held.
+ */
+#define RE_HEAP_SLOW_PATH_BATCH 32
+
+/* How many bins make a full magazine for this class. */
+ReUint32 RE_HeapInternal_MagazineCapacity( ReUint32 classIndex );
+
+/* Takes up to maxCount bins for a class under a single lock acquisition. Returns how many were
+ * actually obtained, which may be zero.
+ */
+ReUint32 RE_HeapInternal_AllocBatch( ReUint32 classIndex, void **outBlocks, ReUint32 maxCount );
+
+/* Returns a chain of bins under a single lock acquisition. The chain is linked through the first
+ * pointer-sized bytes of each block, which is where the magazine node lives.
+ */
+void RE_HeapInternal_FreeChain( ReUint32 classIndex, ReMagazineNode *head );
+
 /* Brings up whichever strategy was selected. Idempotent. */
 ReBool RE_HeapMap_Init( void );
 void   RE_HeapMap_Shutdown( void );
