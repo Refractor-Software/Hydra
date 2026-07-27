@@ -65,6 +65,10 @@ main( void )
     RE_Test_Run( "SpinLock", RE_Test_SpinLock );
     RE_Test_Run( "MemoryArena", RE_Test_MemoryArena );
     RE_Test_Run( "MemoryScratch", RE_Test_MemoryScratch );
+    RE_Test_Run( "MemoryPool", RE_Test_MemoryPool );
+    RE_Test_Run( "MemoryHandlePool", RE_Test_MemoryHandlePool );
+    RE_Test_Run( "MemoryFrame", RE_Test_MemoryFrame );
+    RE_Test_Run( "MemoryRing", RE_Test_MemoryRing );
 
     return (int) RE_Test_Summary();
 }

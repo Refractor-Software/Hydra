@@ -82,3 +82,7 @@ void RE_Test_MemoryMetadata( void );
 void RE_Test_SpinLock( void );
 void RE_Test_MemoryArena( void );
 void RE_Test_MemoryScratch( void );
+void RE_Test_MemoryPool( void );
+void RE_Test_MemoryHandlePool( void );
+void RE_Test_MemoryFrame( void );
+void RE_Test_MemoryRing( void );
