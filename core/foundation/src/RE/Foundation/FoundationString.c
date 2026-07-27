@@ -13,7 +13,15 @@ RE_String_Create( ReString *s, ReAllocator *a, ReStringView initial )
 {
     ReUint64 capacity = initial.length > STRING_MIN_CAPACITY ? initial.length : STRING_MIN_CAPACITY;
 
-    ReUint8 *data = (ReUint8 *) RE_Memory_Allocate( a, capacity + 1 );
+    /* Ask the allocator what a request this size really costs and take all of it. Without this
+     * every string silently wastes the gap between its request and its size class.
+     *
+     * Byte data, so alignment 1: a string buffer has no alignment requirement of its own, and
+     * asking for more would only push it into a larger class for nothing.
+     */
+    capacity = RE_Memory_Quantize( a, capacity + 1, 1 ) - 1;
+
+    ReUint8 *data = (ReUint8 *) RE_Memory_Alloc( a, capacity + 1, 1 );
     if ( !data )
     {
         return RE_False;
@@ -33,7 +41,7 @@ RE_String_Create( ReString *s, ReAllocator *a, ReStringView initial )
 void
 RE_String_Destroy( ReString *s )
 {
-    RE_Memory_Free( s->allocator, s->data );
+    RE_Memory_Free( s->allocator, s->data, s->capacity + 1 );
 
     s->data     = 0;
     s->length   = 0;
@@ -45,7 +53,7 @@ String_GrowToFit( ReString *s, ReUint64 additionalLength )
 {
     if ( additionalLength > ((ReUint64) -1) - s->length )
     {
-        return 0; /* would overflow */
+        return RE_False; /* would overflow */
     }
 
     ReUint64 newLength = s->length + additionalLength;
@@ -54,17 +62,22 @@ String_GrowToFit( ReString *s, ReUint64 additionalLength )
         return RE_True;
     }
 
+    /* Grow by doubling so reallocation stays rare. Even doubling never holds more than about
+     * twice what is needed, which is no worse than the per-node overhead of a linked structure.
+     */
     ReUint64 doubledCapacity = (s->capacity > ((ReUint64) -1) / 2) ? (ReUint64) -1 : s->capacity * 2;
     ReUint64 newCapacity     = doubledCapacity > newLength ? doubledCapacity : newLength;
 
-    ReUint8 *newData = (ReUint8 *) RE_Memory_Allocate( s->allocator, newCapacity + 1 );
+    newCapacity = RE_Memory_Quantize( s->allocator, newCapacity + 1, 1 ) - 1;
+
+    ReUint64 oldAllocationSize = s->capacity + 1;
+
+    ReUint8 *newData = (ReUint8 *) RE_Memory_Realloc( s->allocator, s->data, oldAllocationSize,
+        newCapacity + 1, 1 );
     if ( !newData )
     {
         return RE_False;
     }
-
-    RE_Memory_Copy( newData, s->data, s->length );
-    RE_Memory_Free( s->allocator, s->data );
 
     s->data     = newData;
     s->capacity = newCapacity;

@@ -45,6 +45,29 @@
 #define RE_ALWAYS_INLINE_HINT inline
 #endif
 
+/* Thread-local storage duration. Compiler-level, not an OS call - the thread caches and the
+ * ambient context both need it, and neither wants a platform boundary for something every
+ * compiler has spelled natively for a decade.
+ */
+#if RE_LANGUAGE_CPP
+#define RE_THREAD_LOCAL thread_local
+#elif defined( _MSC_VER )
+#define RE_THREAD_LOCAL __declspec( thread )
+#else
+#define RE_THREAD_LOCAL _Thread_local
+#endif
+
+/* Aligns a declaration. Used to keep per-thread state off shared cache lines, where false sharing
+ * costs scaling in a way that shows up in no profile except as "it just doesn't speed up".
+ */
+#if RE_LANGUAGE_CPP
+#define RE_ALIGN_AS( bytes ) alignas( bytes )
+#elif defined( _MSC_VER )
+#define RE_ALIGN_AS( bytes ) __declspec( align( bytes ) )
+#else
+#define RE_ALIGN_AS( bytes ) _Alignas( bytes )
+#endif
+
 /* Alignment of a type, as an integer constant expression.
  *
  * C11 spells this _Alignof and C++11 spells it alignof; <stdalign.h> would give C the alignof

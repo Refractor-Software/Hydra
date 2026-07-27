@@ -35,6 +35,8 @@ else ()
     add_compile_definitions(RE_BUILD=RE_BUILD_DEBUG)
 endif ()
 
+enable_testing()
+
 add_subdirectory(kernel)
 
 add_subdirectory(core)

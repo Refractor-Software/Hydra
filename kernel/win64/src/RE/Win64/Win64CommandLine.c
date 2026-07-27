@@ -24,7 +24,11 @@ global ReUint8    gWin64CommandLineArenaBuffer[WIN64_COMMAND_LINE_ARENA_SIZE];
 void
 Win64_CommandLine_Init( void )
 {
-    RE_Arena_Init( &gWin64CommandLineArena, gWin64CommandLineArenaBuffer, sizeof( gWin64CommandLineArenaBuffer ) );
+    /* Fixed mode over a static buffer, not a virtual reservation: this runs before the engine's
+     * memory system exists, so it cannot depend on anything that has to be initialised first.
+     */
+    RE_Arena_InitFixed( &gWin64CommandLineArena, gWin64CommandLineArenaBuffer,
+        sizeof( gWin64CommandLineArenaBuffer ) );
 
     int    wideArgCount = 0;
     LPWSTR *wideArgs     = CommandLineToArgvW( GetCommandLineW(), &wideArgCount );

@@ -8,12 +8,6 @@
 
 #include <RE/Foundation/FoundationPrimitiveTypes.h>
 
-/* Matches typical malloc-class alignment guarantees (16 on 64-bit) - the default alignment used
- * when going through the generic ReAllocator interface, which has no alignment parameter
- * of its own.
- */
-#define RE_MEMORY_DEFAULT_ALIGNMENT ( 2 * sizeof( void * ) )
-
 internal inline void *
 RE_Memory_Copy( void *dest, const void *src, ReUint64 size )
 {

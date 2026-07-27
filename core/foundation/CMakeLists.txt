@@ -8,3 +8,5 @@ file(GLOB_RECURSE foundation_sources "src/*.h" "src/*.c")
 
 target_sources(com.refractor.core.foundation PUBLIC ${foundation_headers})
 target_sources(com.refractor.core.foundation PRIVATE ${foundation_sources})
+
+add_subdirectory(test)

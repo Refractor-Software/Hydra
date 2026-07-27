@@ -4,6 +4,29 @@
 
 #include "RE/Win64/Win64Thread.h"
 
+#include <RE/Foundation/FoundationThread.h>
+
+/* Windows side of the RE_Thread_* boundary declared in FoundationThread.h. */
+
+void
+RE_Thread_Yield( void )
+{
+    /* SwitchToThread only yields to a thread on the *same* processor and reports whether it found
+     * one. Sleep(0) is the documented follow-up when it did not: together they cover both the
+     * "another thread is ready here" and "everything on this core is blocked" cases.
+     */
+    if ( !SwitchToThread() )
+    {
+        Sleep( 0 );
+    }
+}
+
+ReUint64
+RE_Thread_CurrentId( void )
+{
+    return (ReUint64) GetCurrentThreadId();
+}
+
 typedef HRESULT( WINAPI *ReWin64PfnSetThreadDescription ) (HANDLE, PCWSTR);
 
 internal void
