@@ -7,7 +7,7 @@
     },
     "configurePresets": [
         {
-            "name": "Windows",
+            "name": "win64",
             "hidden": true,
             "generator": "Ninja",
             "architecture": {
@@ -31,25 +31,25 @@
             }
         },
         {
-            "name": "Windows-Debug",
-            "inherits": "Windows",
-            "binaryDir": "Binaries/Windows/Debug/",
+            "name": "win64-debug",
+            "inherits": "win64",
+            "binaryDir": "bin/win64/debug/",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "Windows-Development",
-            "inherits": "Windows",
-            "binaryDir": "Binaries/Windows/Development/",
+            "name": "win64-development",
+            "inherits": "win64",
+            "binaryDir": "bin/win64/development/",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
         },
         {
-            "name": "Windows-Release",
-            "inherits": "Windows",
-            "binaryDir": "Binaries/Windows/Release/",
+            "name": "win64-shipping",
+            "inherits": "win64",
+            "binaryDir": "bin/win64/shipping/",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
@@ -57,16 +57,16 @@
     ],
     "buildPresets": [
         {
-            "name": "Windows-Debug",
-            "configurePreset": "Windows-Debug"
+            "name": "win64-debug",
+            "configurePreset": "win64-debug"
         },
         {
-            "name": "Windows-Development",
-            "configurePreset": "Windows-Development"
+            "name": "win64-development",
+            "configurePreset": "win64-development"
         },
         {
-            "name": "Windows-Release",
-            "configurePreset": "Windows-Release"
+            "name": "win64-shipping",
+            "configurePreset": "win64-shipping"
         }
     ]
 }
