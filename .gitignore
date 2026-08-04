@@ -1,7 +1,9 @@
-Binaries
+# A couple of these are commented out until we need them to not be...
+
+#Binaries
 bin
-DerivedDataCache
-Intermediate
+#DerivedDataCache
+#Intermediate
 obj
 Saved
 .idea
