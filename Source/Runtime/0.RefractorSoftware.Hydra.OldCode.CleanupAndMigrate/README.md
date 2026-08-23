@@ -19,7 +19,7 @@ used by the Refractor Software game development and production units.
 > elsewhere.
 >
 > Refractor Software makes zero guarantees that Hydra is suitable for your use case, and will not make it work for you. See the
-> [license](COPYING.txt) for more information.
+> [license](COPYING) for more information.
 
 ## Purpose
 
@@ -28,22 +28,6 @@ while supporting the variety of (typically action) games developed at Refractor 
 heavily multithreaded codebase that's designed to be extended as needs evolve and scale to huge volumes of content with ruthless efficiency.
 
 ### Hardware Performance Targets
-
-#### Static Resolution
-
-These are generally based on what we want to hit internally as well as what will scale cleanly on modern 4K and 1440p panels that typically ship their own
-built-in hardware upscaling.
-
-| Platform                     | Resolution | Framerate |
-|------------------------------|------------|-----------|
-| PlayStation 5                | 2560x1440  | 60hz      |
-| PlayStation 5 Pro            | 3200x1800  | 60hz      |
-| Xbox Series X                | 2880x1620  | 60hz      |
-| Xbox Series S                | 1920x1080  | 60hz      |
-| Nintendo Switch 2 (Docked)   | 1920x1080  | 60hz      |
-| Nintendo Switch 2 (Handheld) | 1280x720   | 60hz      |
-
-#### Dynamic Resolution Mode (Deprecated)
 
 - **Input Resolution (T1)** is the target input resolution that we optimize to hit as often as possible.
 - **Input Resolution (T2)** is for hard-to-predict bad cases (<10% of all gameplay time).
@@ -59,9 +43,6 @@ Acceptable dynamic resolution for each platform is in the range [T3, T1].
 | Xbox Series S                | 1536x864              | 1792x1008             | 1920x1080             | 2560x1440         | 60hz      |
 | Nintendo Switch 2 (Docked)   | 1536x864              | 1792x1008             | 1920x1080             | 2560x1440         | 60hz      |
 | Nintendo Switch 2 (Handheld) | 1056x594              | 1344x756              | 1440x810              | 1920x1080         | 60hz      |
-
-As stated this is deprecated, from an earlier time when Hydra was going to use temporal upscaling to output at higher resolutions. We don't
-plan on doing this anymore though, because of the ghosting and other image quality issues it presents.
 
 ## Language
 
